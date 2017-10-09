@@ -11584,18 +11584,6 @@ xlocale.h
 
 /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/xlocale.h
 
-/home/ruhtra/nao/ctc/libnaoqi/include/alerror/alerror.h
-alerror/config.h
--
-stdexcept
--
-string
--
-
-/home/ruhtra/nao/ctc/libnaoqi/include/alerror/config.h
-qi/macro.hpp
--
-
 /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/altexttospeechproxy.h
 string
 -
@@ -12303,8 +12291,8 @@ Reactions.cpp
 /home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/src/Reactions.cpp
 
 /home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/src/Reactions.cpp
-alerror/alerror.h
--
 alproxies/altexttospeechproxy.h
+-
+iostream
 -
 

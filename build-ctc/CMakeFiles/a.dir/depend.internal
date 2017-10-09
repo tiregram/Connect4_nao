@@ -1055,8 +1055,6 @@ CMakeFiles/a.dir/src/Main.cpp.o
  /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wchar.h
  /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wctype.h
  /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/xlocale.h
- /home/ruhtra/nao/ctc/libnaoqi/include/alerror/alerror.h
- /home/ruhtra/nao/ctc/libnaoqi/include/alerror/config.h
  /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/altexttospeechproxy.h
  /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/api.h
  /home/ruhtra/nao/ctc/libnaoqi/include/alvalue/alvalue.h
@@ -2176,8 +2174,6 @@ CMakeFiles/a.dir/src/Reactions.cpp.o
  /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wchar.h
  /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wctype.h
  /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/xlocale.h
- /home/ruhtra/nao/ctc/libnaoqi/include/alerror/alerror.h
- /home/ruhtra/nao/ctc/libnaoqi/include/alerror/config.h
  /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/altexttospeechproxy.h
  /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/api.h
  /home/ruhtra/nao/ctc/libnaoqi/include/alvalue/alvalue.h

@@ -1054,8 +1054,6 @@ CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux
 CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wchar.h
 CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wctype.h
 CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/xlocale.h
-CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alerror/alerror.h
-CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alerror/config.h
 CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/altexttospeechproxy.h
 CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/api.h
 CMakeFiles/a.dir/src/Main.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alvalue/alvalue.h
@@ -2175,8 +2173,6 @@ CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-
 CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wchar.h
 CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/wctype.h
 CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/cross/i686-aldebaran-linux-gnu/sysroot/usr/include/xlocale.h
-CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alerror/alerror.h
-CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alerror/config.h
 CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/altexttospeechproxy.h
 CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alproxies/api.h
 CMakeFiles/a.dir/src/Reactions.cpp.o: /home/ruhtra/nao/ctc/libnaoqi/include/alvalue/alvalue.h

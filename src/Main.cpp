@@ -4,8 +4,8 @@
 
 
 
-/*const std::string ipnao = "128.39.75.111";
-AL::ALTextToSpeechProxy tts(ipnao, 9559);*/
+const std::string ipnao = "128.39.75.111";
+AL::ALTextToSpeechProxy tts(ipnao, 9559);
 
 
 int main() {
@@ -19,8 +19,11 @@ int main() {
     std::cout << "Incorrect input" << std::endl;
     std::cin >> d;
   }
-  if (d == 'G' || d == 'g')
+  if (d == 'G' || d == 'g'){
     Human = GREEN;
+    nao_is_red(tts);
+    }
+  else nao_is_green(tts);
 
   std::cout << "Who starts ? Red (R) or Green (G) ?" << std::endl;
   char c;
@@ -33,9 +36,14 @@ int main() {
   if (c == 'G' || c == 'g')
     Starter = GREEN;
   Game A(Starter);
+  if (Starter = Human) human_start();
+  else nao_start(tts);
 
   std::cout << A << std::endl;
   int column;
+  int random;
+  
+  //After every turn, we check if the game is over. If it's not, we check if it's human turn or nao's turn. 
   while (!(A.is_over())) {
 
     if (A.get_turn() == Human) {
@@ -48,15 +56,23 @@ int main() {
         std::cout << "This movement is not valid. Try again!" << std::endl;
       A.apply(m);
       std::cout << A << std::endl;
+      after_human_turn(tts);
     }
 
     else {
-      Move m(rand() % 7, A.get_turn(), A);
+      random = rand() % 7;
+      play_on_row(random, tts);
+      Move m(random, A.get_turn(), A);
       A.apply(m);
       std::cout << A << std::endl;
+      after_nao_turn(tts);
     }
   }
-  std::cout << "And the winner is..." << Player_name(A.who_win()) << "!!!"
+  Player Result = Player_name(A.who_win());
+  if (result = Human) nao_lose(tts);
+  else if (result = NO_ONE) nao_draw(tts);
+  else nao_win(tts);
+  std::cout << "And the winner is..." << Result << "!!!"
             << std::endl;
   return 0;
 }
