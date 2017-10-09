@@ -1,13 +1,22 @@
 #include "Game.hpp"
 #include "iostream"
+#include "Reactions.cpp"
+
+
+
+/*const std::string ipnao = "128.39.75.111";
+AL::ALTextToSpeechProxy tts(ipnao, 9559);*/
+
+
 int main() {
 
+  //Initialize the game, the human picks a color and who starts. 
   std::cout << "Pick a color. Red (R) or Green (G) ?" << std::endl;
   char d;
   std::cin >> d;
   Player Human = RED;
   while (d != 'G' && d != 'g' && d != 'r' && d != 'R') {
-    std::cout << "Incorrect letter" << std::endl;
+    std::cout << "Incorrect input" << std::endl;
     std::cin >> d;
   }
   if (d == 'G' || d == 'g')
@@ -18,7 +27,7 @@ int main() {
   std::cin >> c;
   Player Starter = RED;
   while (c != 'G' && c != 'g' && c != 'r' && c != 'R') {
-    std::cout << "Incorrect letter" << std::endl;
+    std::cout << "Incorrect input" << std::endl;
     std::cin >> c;
   }
   if (c == 'G' || c == 'g')
