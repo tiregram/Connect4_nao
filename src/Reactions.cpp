@@ -3,9 +3,9 @@
 
 
 
-void play_on_row(int row, AL::ALTextToSpeechProxy voiceproxy){
+// void play_on_row(int row, AL::ALTextToSpeechProxy voiceproxy){
 
-const std::string phrase="I will play on row number" + row;
-voiceproxy.say(phrase);
+// const std::string phrase="I will play on row number" + row;
+// voiceproxy.say(phrase);
 
-}
+// }
