@@ -40,3 +40,4 @@ CMakeCache.txt
 
 build-ctc/*
 build-mytoolchain/*
+build-*

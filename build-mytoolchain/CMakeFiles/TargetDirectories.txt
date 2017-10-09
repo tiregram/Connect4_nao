@@ -1,7 +1,0 @@
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/install/strip.dir
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/edit_cache.dir
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/list_install_components.dir
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/test.dir
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/install/local.dir
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/rebuild_cache.dir
-/home/ruhtra/nao/naoqi-sdk/doc/dev/cpp/examples/core/Connect4_nao/build-mytoolchain/CMakeFiles/install.dir

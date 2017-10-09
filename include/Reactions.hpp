@@ -1,6 +1,7 @@
-/*#include <alerror/alerror.h>
-#include <alproxies/altexttospeechproxy.h>*/
+#include <alerror/alerror.h>
+#include <alproxies/altexttospeechproxy.h>
 #include <iostream>
+#include <cstring>
 
 
 void nao_is_red(AL::ALTextToSpeechProxy voiceproxy){
@@ -28,10 +29,10 @@ const std::string phrase="I will start, so I can win faster";
 voiceproxy.say(phrase);
 }
 
-// void play_on_row(int row, AL::ALTextToSpeechProxy voiceproxy){
-
-const std::string phrase="I will play on row number " + row;
-voiceproxy.say(phrase);
+void play_on_row(int row, AL::ALTextToSpeechProxy voiceproxy){
+std::ostringstream ss;
+ss << "I will play on row number " << ss;
+voiceproxy.say(ss.str());
 
 }
 

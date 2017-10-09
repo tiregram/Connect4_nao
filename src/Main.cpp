@@ -1,6 +1,6 @@
 #include "Game.hpp"
 #include "iostream"
-#include "Reactions.cpp"
+#include "../include/Reactions.hpp"
 
 
 
@@ -36,7 +36,7 @@ int main() {
   if (c == 'G' || c == 'g')
     Starter = GREEN;
   Game A(Starter);
-  if (Starter = Human) human_start();
+  if (Starter = Human) human_start(tts);
   else nao_start(tts);
 
   std::cout << A << std::endl;
@@ -54,9 +54,11 @@ int main() {
       Move m(column - 1, A.get_turn(), A);
       if (m.is_valid() != OK)
         std::cout << "This movement is not valid. Try again!" << std::endl;
-      A.apply(m);
-      std::cout << A << std::endl;
-      after_human_turn(tts);
+      else {
+      	A.apply(m);
+      	std::cout << A << std::endl;
+      	after_human_turn(tts);
+      }
     }
 
     else {
@@ -68,11 +70,11 @@ int main() {
       after_nao_turn(tts);
     }
   }
-  Player Result = Player_name(A.who_win());
-  if (result = Human) nao_lose(tts);
-  else if (result = NO_ONE) nao_draw(tts);
+  Player Result = A.who_win();
+  if (Result = Human) nao_lose(tts);
+  else if (Result = NO_ONE) nao_draw(tts);
   else nao_win(tts);
-  std::cout << "And the winner is..." << Result << "!!!"
+  std::cout << "And the winner is..." << Player_name(Result) << "!!!"
             << std::endl;
   return 0;
 }
