@@ -4,8 +4,8 @@
 
 
 
-/*const std::string ipnao = "128.39.75.111";
-AL::ALTextToSpeechProxy tts(ipnao, 9559);*/
+const std::string ipnao = "128.39.75.111";
+AL::ALTextToSpeechProxy tts(ipnao, 9559);
 
 
 int main() {
@@ -19,8 +19,11 @@ int main() {
     std::cout << "Incorrect input" << std::endl;
     std::cin >> d;
   }
-  if (d == 'G' || d == 'g')
+  if (d == 'G' || d == 'g'){
     Human = GREEN;
+    nao_is_red();
+    }
+  else nao_is_green();
 
   std::cout << "Who starts ? Red (R) or Green (G) ?" << std::endl;
   char c;
