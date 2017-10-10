@@ -36,7 +36,7 @@ int main() {
   if (c == 'G' || c == 'g')
     Starter = GREEN;
   Game A(Starter);
-  if (Starter = Human) human_start(tts);
+  if (Starter == Human) human_start(tts);
   else nao_start(tts);
 
   std::cout << A << std::endl;
@@ -71,8 +71,8 @@ int main() {
     }
   }
   Player Result = A.who_win();
-  if (Result = Human) nao_lose(tts);
-  else if (Result = NO_ONE) nao_draw(tts);
+  if (Result == Human) nao_lose(tts);
+  else if (Result == NO_ONE) nao_draw(tts);
   else nao_win(tts);
   std::cout << "And the winner is..." << Player_name(Result) << "!!!"
             << std::endl;
