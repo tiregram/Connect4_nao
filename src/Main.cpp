@@ -12,7 +12,7 @@ int win_possibility(Game g){
 	Player nao = g.get_turn();
 	Player p;
 	if (nao == RED) p = GREEN;
-	else p = RED; 
+	else p = RED;
 	int i = -1;
 	for (int j = 0; j<7; j++){
 		i = g.get_first_empty_space(j);
@@ -22,10 +22,10 @@ int win_possibility(Game g){
 			g.set(i,j,EMPTY);
 			return j;
 			}
-			g.set(i,j,EMPTY);			
+			g.set(i,j,EMPTY);
 		}
 	}
-	
+
 	for (int j = 0; j<7; j++){
 		i = g.get_first_empty_space(j);
 		if (i != -1){
@@ -37,13 +37,14 @@ int win_possibility(Game g){
 			g.set(i,j,EMPTY);
 		}
 	}
-	
+
 	return -1;
 
 }
 int main() {
 
-  //Initialize the game, the human picks a color and who starts. 
+  //Initialize the game, the human picks a color and who starts.
+	srand(time(NULL));
   std::cout << "Pick a color. Red (R) or Green (G) ?" << std::endl;
   char d;
   std::cin >> d;
@@ -76,7 +77,7 @@ int main() {
   int column;
   int ai_column;
   int check;
-  //After every turn, we check if the game is over. If it's not, we check if it's human turn or nao's turn. 
+  //After every turn, we check if the game is over. If it's not, we check if it's human turn or nao's turn.
   while (!(A.is_over())) {
 
     if (A.get_turn() == Human) {
@@ -96,7 +97,7 @@ int main() {
 
     else {
       check = win_possibility(A);
-      if(check != -1) ai_column = check; 
+      if(check != -1) ai_column = check;
       else ai_column = rand() % 7;
       play_on_row(ai_column, tts);
       Move m(ai_column, A.get_turn(), A);
