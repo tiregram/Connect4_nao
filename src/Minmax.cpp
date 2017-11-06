@@ -8,8 +8,8 @@ Minmax::~Minmax(){
 
   
 Move Minmax::AI_play(Game G){
-	std::cout<< "eval pre-start :" <<evaluate(G)<<std::endl;
-	int best_score=-2;
+	//std::cout<< "eval pre-start :" <<evaluate(G)<<std::endl;
+	int best_score=-(4*4*4*4);
 	int column;
 	for (int i = 0; i<7; i++){
 		//std::cout<<"Iteration AIPLAY " << i <<std::endl;
@@ -19,10 +19,10 @@ Move Minmax::AI_play(Game G){
 		if (maux.is_valid() == OK){
 			aux.apply(maux);
 			
-			std::cout<<aux<< "eval :" <<evaluate(aux)<<std::endl;
+			//std::cout<<aux<< "eval :" <<evaluate(aux)<<std::endl;
 			//std::cout<<"Playing on row number " <<i<<std::endl;
 			if (aux.who_win() == G.get_turn()) return mret;
-			int score = min(aux,0,6);
+			int score = min(aux,0,4);
 			if (score >= best_score){
 				column = i;
 				best_score = score;
@@ -99,7 +99,7 @@ bool Minmax::move_is_win(Game G, int column){
 	return false;
 	
 }
-int Minmax::minimax(Game G, int depth, int max_depth){
+/*int Minmax::minimax(Game G, int depth, int max_depth){
    Player winner = G.who_win();
    int chip_count = G.total_chips();
    
@@ -125,23 +125,23 @@ int Minmax::minimax(Game G, int depth, int max_depth){
    		 }
    	 return best_score;
   }
-
+*/
 int Minmax::min(Game G, int depth, int max_depth){
 	//std::cout<<"Iteration min " << depth << "   " << max_depth<<std::endl;
 	Player winner = G.who_win();
 	
 	if (winner == G.get_nao()){
-		return 100;
+		return evaluate(G);
 	}
 	else if (winner == G.get_human()){
-		return -100;
+		return -evaluate(G);
 	}
 	else if (G.total_chips() == 42 || depth == max_depth){
 	        //std::cout<<"MIN:MaxDepth"<<std::endl;
-		return 0;
+		return evaluate(G);
 	}
 	
-	int best_score = 100;
+	int best_score = (4*4*4*4);
 	
 	for (int i = 0; i<7;i++){
    	Game aux(G);
@@ -163,17 +163,17 @@ int Minmax::max(Game G, int depth, int max_depth){
 	Player winner = G.who_win();
 	
 	if (winner == G.get_human()){
-		return -1;
+		return -evaluate(G);
 	}
 	else if (winner == G.get_nao()){
-		return 1;
+		return evaluate(G);
 	}
 	else if (G.total_chips() == 42 || depth == max_depth){
 		//std::cout<<"Max:MaxDepth"<<std::endl;
-		return 0;
+		return evaluate(G);
 	}
 	
-	int best_score = -2;
+	int best_score = -(4*4*4*4);
 	
 	for (int i = 0; i<7;i++){
 		Game aux(G);
