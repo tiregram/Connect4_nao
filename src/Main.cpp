@@ -1,63 +1,37 @@
 #include "Game.hpp"
 #include "iostream"
-#include "../include/Reactions.hpp"
+//#include "../include/Reactions.hpp"
+#include "../include/Minmax.hpp"
+#include "../include/Basic.hpp"
 
 
 
-const std::string ipnao = "128.39.75.111";
-AL::ALTextToSpeechProxy tts(ipnao, 9559);
+//const std::string ipnao = "128.39.75.111";
+/*const std::string ipnao = "127.0.0.1";
+AL::ALTextToSpeechProxy tts(ipnao, 9559);*/
 
-int win_possibility(Game g){
 
-	Player nao = g.get_turn();
-	Player p;
-	if (nao == RED) p = GREEN;
-	else p = RED;
-	int i = -1;
-	for (int j = 0; j<7; j++){
-		i = g.get_first_empty_space(j);
-		if (i != -1){
-			g.set(i,j,Player_to_Board_state(nao));
-			if (g.is_over()) {
-			g.set(i,j,EMPTY);
-			return j;
-			}
-			g.set(i,j,EMPTY);
-		}
-	}
-
-	for (int j = 0; j<7; j++){
-		i = g.get_first_empty_space(j);
-		if (i != -1){
-			g.set(i,j,Player_to_Board_state(p));
-			if (g.is_over()) {
-			g.set(i,j,EMPTY);
-			return j;
-			}
-			g.set(i,j,EMPTY);
-		}
-	}
-
-	return -1;
-
-}
 int main() {
-
+  //Choose AI here.
+  AI_Abs* AI = new Minmax();
+  
   //Initialize the game, the human picks a color and who starts.
 	srand(time(NULL));
   std::cout << "Pick a color. Red (R) or Green (G) ?" << std::endl;
   char d;
   std::cin >> d;
   Player Human = RED;
+
   while (d != 'G' && d != 'g' && d != 'r' && d != 'R') {
     std::cout << "Incorrect input" << std::endl;
     std::cin >> d;
   }
   if (d == 'G' || d == 'g'){
     Human = GREEN;
-    nao_is_red(tts);
+    
+    //nao_is_red(tts);
     }
-  else nao_is_green(tts);
+  //else nao_is_green(tts);
 
   std::cout << "Who starts ? Red (R) or Green (G) ?" << std::endl;
   char c;
@@ -70,8 +44,17 @@ int main() {
   if (c == 'G' || c == 'g')
     Starter = GREEN;
   Game A(Starter);
-  if (Starter == Human) human_start(tts);
-  else nao_start(tts);
+  if (Human == RED){
+  	A.set_human(RED);
+  	A.set_nao(GREEN);
+  }
+  else{
+  	A.set_human(GREEN);
+    	A.set_nao(RED);
+  }
+  
+ /* if (Starter == Human) human_start(tts);
+  else nao_start(tts);*/
 
   std::cout << A << std::endl;
   int column;
@@ -91,25 +74,23 @@ int main() {
       else {
       	A.apply(m);
       	std::cout << A << std::endl;
-      	if (!A.is_over()) after_human_turn(tts);
+      	//if (!A.is_over()) after_human_turn(tts);
       }
     }
 
     else {
-      check = win_possibility(A);
-      if(check != -1) ai_column = check;
-      else ai_column = rand() % 7;
-      play_on_row(ai_column, tts);
-      Move m(ai_column, A.get_turn(), A);
-      A.apply(m);
+    
+       Move m = AI->AI_play(A);
+      // play_on_row(m.column, tts);
+       A.apply(m);
       std::cout << A << std::endl;
-      if (!A.is_over()) after_nao_turn(tts);
+     // if (!A.is_over()) after_nao_turn(tts);
     }
   }
   Player Result = A.who_win();
-  if (Result == Human) nao_lose(tts);
+  /*if (Result == Human) nao_lose(tts);
   else if (Result == NO_ONE) nao_draw(tts);
-  else nao_win(tts);
+  else nao_win(tts);*/
   std::cout << "And the winner is..." << Player_name(Result) << "!!!"
             << std::endl;
   return 0;

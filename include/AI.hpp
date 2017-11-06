@@ -1,13 +1,17 @@
+#pragma once 
 #include "Game.hpp"
+#include "cstdlib"
 
-class IA_Abs
+
+
+class AI_Abs
 {
 
 public:
-  IA_Abs();
-  virtual ~IA_Abs();
+ /* AI_Abs();
+  virtual ~AI_Abs();*/
 
-  Move play(Game G);
+  virtual Move AI_play(Game G) = 0;
 
 };
 

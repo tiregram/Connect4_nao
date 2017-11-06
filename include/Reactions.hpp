@@ -5,45 +5,51 @@
 #include <time.h>
 
 std::string isRed[] = {
-  "OK! I'll be red and you'll be green",
-  "I'm red and you're green",
-  "You can be green and I will be red"
+  "OK! I'll be red and you'll be green.",
+  "I'm red and you're green.",
+  "You can be green and I will be red."
 };
 
 std::string isGreen[] = {
-  "OK! I'll be green and you'll be red",
-  "I'm green and you're red",
-  "You can be red and I will be green"
+  "OK! I'll be green and you'll be red.",
+  "I'm green and you're red.",
+  "You can be red and I will be green."
 };
 
 std::string humanStart[] = {
   "I'll let you start this time...",
   "Go ahead and start the game!",
-  "You can start us off"
+  "You can start us off."
 };
 
 std::string naoStart[] = {
-  "I will start, so I can win faster",
-  "I'll make the first move",
-  "Alright, I'll go first"
+  "I will start, so I can win faster.",
+  "I'll make the first move.",
+  "Alright, I'll go first."
 };
 
 std::string playOnRow[] = {
   "I will play on row number ",
   "I choose row number ",
-  "My move is on row "
+  "My move is on row ",
+  "Let me think... I guess I'll play on row number ",
+  "Easy choice for me, row number "
 };
 
 std::string afterHumanTurn[] = {
-  "Nice move! It's my turn now",
-  "Good choice. Now it's my turn",
-  "OK, now I'll go"
+  "Nice move! It's my turn now.",
+  "Good choice. Now it's my turn.",
+  "Now I'll go.",
+  "It's my time to shine!",
+  "What do I do now..."
 };
 
 std::string afterNaoTurn[] = {
   "What do you think about this move! You're up!",
-  "OK, it's your turn now.",
-  "You're up next!"
+  "It's your turn now.",
+  "You're up next!",
+  "Hurry up, your move!",
+  "You didn't expect that did you? Keep going!"
 };
 
 std::string naoWin[] = {
@@ -91,21 +97,21 @@ void nao_start(AL::ALTextToSpeechProxy voiceproxy){
 
 void play_on_row(int row, AL::ALTextToSpeechProxy voiceproxy){
 	std::ostringstream ss;
-	ss << playOnRow[rand() %3] << (row+1);
+	ss << playOnRow[rand() %5] << (row+1);
 	voiceproxy.say(ss.str());
 
 }
 
 void after_human_turn(AL::ALTextToSpeechProxy voiceproxy){
 
-	const std::string phrase=afterHumanTurn[rand() %3];
+	const std::string phrase=afterHumanTurn[rand() %5];
 	voiceproxy.say(phrase);
 
 }
 
 void after_nao_turn(AL::ALTextToSpeechProxy voiceproxy){
 
-	const std::string phrase=afterNaoTurn[rand() %3];
+	const std::string phrase=afterNaoTurn[rand() %5];
 	voiceproxy.say(phrase);
 
 }

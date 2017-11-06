@@ -1,18 +1,23 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required (VERSION 2.8.11)
+project (Connect4_nao)
 
-project(con4)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+# set(CMAKE_CXX_STANDARD 11)
+# lib build
 
-find_package(qibuild)
-
-# add this to avoid compilation error with c++11 because
-# NAO is deprecated and is not C++ 11 compliant
-add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
-
-# get all cpp file
 file(GLOB_RECURSE C4_NAO_FILE src/*.cpp)
+include_directories( ${CMAKE_SOURCE_DIR}/include )
+include_directories( ${CMAKE_SOURCE_DIR}/../connect4_rule/include )
+link_directories( ${CMAKE_SOURCE_DIR}/../connect4_rule)
 
-qi_create_bin(a ${C4_NAO_FILE})
-qi_use_lib(a ALCOMMON ALPROXIES CONNECT4_RULE)
+add_executable(c4nao ${C4_NAO_FILE})
+target_link_libraries(c4nao c4rule)
 
-add_custom_target("deploy")
-add_custom_command(TARGET "deploy" POST_BUILD "echo lapin")
+
+
+
+
+
+
+
+
