@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 2.8.11)
 project (Connect4_nao)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
-# set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_STANDARD 11)
 # lib build
 
 file(GLOB_RECURSE C4_NAO_FILE src/*.cpp)

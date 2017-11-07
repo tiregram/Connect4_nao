@@ -1,14 +1,14 @@
 #pragma once
 #include "AI.hpp"
 
-class Basic : public AI_Abs 
+class Basic : public Player_Abs 
 {
 
 public:
-  Basic();
+  Basic(Player p);
   virtual ~Basic();
 
-  virtual Move AI_play(Game G);
+  virtual Move play(Game G);
 
 private:
 

@@ -1,7 +1,6 @@
 #include "../include/Basic.hpp"
 
-Basic::Basic(){
-}
+Basic::Basic(Player p):Player_Abs(p){}
 
 Basic::~Basic(){
 }
@@ -16,7 +15,7 @@ int Basic::win_possibility(Game g){
 	for (int j = 0; j<7; j++){
 		i = g.get_first_empty_space(j);
 		if (i != -1){
-			g.set(i,j,Player_to_Board_state(nao));
+			g.set(i,j,player_to_board_state(nao));
 			if (g.is_over()) {
 			g.set(i,j,EMPTY);
 			return j;
@@ -28,7 +27,7 @@ int Basic::win_possibility(Game g){
 	for (int j = 0; j<7; j++){
 		i = g.get_first_empty_space(j);
 		if (i != -1){
-			g.set(i,j,Player_to_Board_state(p));
+			g.set(i,j,player_to_board_state(p));
 			if (g.is_over()) {
 			g.set(i,j,EMPTY);
 			return j;
@@ -40,14 +39,13 @@ int Basic::win_possibility(Game g){
 	return -1;
 
 }
-Move Basic::AI_play(Game G){
-      srand (time(NULL));
-      int check;
-      int ai_column;
-      check = win_possibility(G);
-      if(check != -1) ai_column = check;
-      else ai_column = rand() % 7;
-      Move m(ai_column, G.get_turn(), G);
-      return m;
-
+Move Basic::play(Game G){
+	srand (time(NULL));
+	int check;
+	int ai_column;
+	check = win_possibility(G);
+	if(check != -1) ai_column = check;
+	else ai_column = rand() % 7;
+	Move m(ai_column, G.get_turn(), G);
+	return m;
 }

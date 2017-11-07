@@ -4,14 +4,18 @@
 
 
 
-class AI_Abs
+class Player_Abs
 {
 
 public:
- /* AI_Abs();
-  virtual ~AI_Abs();*/
+  Player_Abs(Player p):color(p){}
+  
+  /*virtual ~AI_Abs();*/
 
-  virtual Move AI_play(Game G) = 0;
-
+  virtual Move play(Game G) = 0;
+  Player get_color(){ return color;};
+private:
+ Player color;  
 };
+
 
