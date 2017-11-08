@@ -1,6 +1,6 @@
 #include "../include/Minmax.hpp"
 
-Minmax::Minmax(Player p, int depth):Player_Abs(p),depth(depth){	
+Minmax::Minmax(Player p, int weight, int depth):Player_Abs(p),weight(weight),depth(depth){	
 }
 
 Minmax::~Minmax(){
@@ -14,7 +14,7 @@ Move Minmax::play(Game G){
 }
 
 //Comparison of 4 Board_states. Used in evaluation function.
-int Minmax::compare_4(Player p, Board_state val_1, Board_state val_2, Board_state val_3, Board_state val_4, int weight){
+int Minmax::compare_4(Player p, Board_state val_1, Board_state val_2, Board_state val_3, Board_state val_4){
 	Board_state p_c = player_to_board_state(p);
 	Board_state p_c_o = player_to_board_state(opposite_player(p));
 	//Encourages multiple pieces of the same color with empty spaces rather than with opposite pieces. If everything is empty, score is 0. 
@@ -78,7 +78,7 @@ std::pair<int,int> Minmax::min(Game G, int current_depth, int max_depth){
 	else if (G.total_chips() == 42 || current_depth == max_depth){
 		return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
 	}	
-	int best_score = (4*4*4*4*7);
+	int best_score = (weight*weight*weight*weight*7);
 	int best_column = 0;
 	for (int i = 0; i<7;i++){
 		Game aux(G);
@@ -87,10 +87,14 @@ std::pair<int,int> Minmax::min(Game G, int current_depth, int max_depth){
 			aux.apply(maux);
 			std::pair<int,int> score_column = max(aux,current_depth+1,max_depth);
 			int score = score_column.first;
-			if(score <= best_score){
+			if(score == best_score){
+				int random_number = rand() % 2;
+				if (random_number == 1) best_column = i;	
+			}
+			if(score < best_score){
 				best_score = score;
-				best_column = i;
-				}
+				best_column= i;
+			}
 		}
 	}
 	return std::make_pair<int,int>(best_score, best_column);
@@ -107,7 +111,7 @@ std::pair<int,int> Minmax::max(Game G, int current_depth, int max_depth){
 	else if (G.total_chips() == 42 || current_depth == max_depth){
 		return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
 	}	
-	int best_score = -(4*4*4*4*7);
+	int best_score = -(weight*weight*weight*weight*7);
 	int best_column = 0;
 	for (int i = 0; i<7;i++){
 		Game aux(G);
@@ -116,10 +120,14 @@ std::pair<int,int> Minmax::max(Game G, int current_depth, int max_depth){
 			aux.apply(maux);
 			std::pair<int,int> score_column = min(aux,current_depth+1,max_depth);
 			int score = score_column.first;			
-			if(score >= best_score){
-		 		best_score = score;
-		 		best_column = i;
-		 	}
+			if(score == best_score){
+				int random_number = rand() % 2;
+				if (random_number == 1) best_column = i;
+			}
+			if(score > best_score){
+				best_score = score;
+				best_column = i;
+			}
 		}
 	}
 	return std::make_pair<int,int>(best_score, best_column);
