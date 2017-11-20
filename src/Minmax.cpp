@@ -1,4 +1,5 @@
 #include "../include/Minmax.hpp"
+#include <limits>
 
 Minmax::Minmax(Player p, int weight, int depth):Player_Abs(p),weight(weight),depth(depth){	
 }
@@ -31,13 +32,14 @@ int Minmax::compare_4(Player p, Board_state val_1, Board_state val_2, Board_stat
 }
 
 //Evaluation of the game board, used to get a score that will help the AI decide where to play.
-int Minmax::evaluate(Game G){
+int Minmax::evaluate(const Game &G){
 	Player player = this->get_color();
 	int total_score = 0;
 	//Horizontal eval 
 	for (int i = 0; i<6; i++){
 		for(int j = 0; j<4; j++){
 			total_score += compare_4(player, G.get(i,j), G.get(i,j+1), G.get(i,j+2), G.get(i,j+3));
+			
 		}
 	}
 	
@@ -66,19 +68,19 @@ int Minmax::evaluate(Game G){
 }
 
 
-std::pair<int,int> Minmax::min(Game G, int current_depth, int max_depth){
+std::pair<int,int> Minmax::min(Game &G, int current_depth, int max_depth){
 
 	Player winner = G.who_win();
 	if (winner == this->get_color()){
-		return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
+		return std::make_pair<int,int>(evaluate(G),-1);
 	}
 	else if (winner == opposite_player(this->get_color())){
-		return std::make_pair<int,int>(-evaluate(G)/(current_depth+1),-1);
+		return std::make_pair<int,int>(-evaluate(G),-1);
 	}
 	else if (G.total_chips() == 42 || current_depth == max_depth){
-		return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
+		return std::make_pair<int,int>(evaluate(G),-1);
 	}	
-	int best_score = (weight*weight*weight*weight*7);
+	int best_score = std::numeric_limits<int>::max();
 	int best_column = 0;
 	for (int i = 0; i<7;i++){
 		Game aux(G);
@@ -100,18 +102,18 @@ std::pair<int,int> Minmax::min(Game G, int current_depth, int max_depth){
 	return std::make_pair<int,int>(best_score, best_column);
 }
 
-std::pair<int,int> Minmax::max(Game G, int current_depth, int max_depth){
+std::pair<int,int> Minmax::max(Game &G, int current_depth, int max_depth){
 	Player winner = G.who_win();
 	if (winner == opposite_player(this->get_color())){
-		return std::make_pair<int,int>(-evaluate(G)/(current_depth+1),-1);
+		return std::make_pair<int,int>(-evaluate(G),-1);
 	}
 	else if (winner == this->get_color()){
-		return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
+		return std::make_pair<int,int>(evaluate(G),-1);
 	}
 	else if (G.total_chips() == 42 || current_depth == max_depth){
-		return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
+		return std::make_pair<int,int>(evaluate(G),-1);
 	}	
-	int best_score = -(weight*weight*weight*weight*7);
+	int best_score = std::numeric_limits<int>::min();
 	int best_column = 0;
 	for (int i = 0; i<7;i++){
 		Game aux(G);
@@ -119,6 +121,7 @@ std::pair<int,int> Minmax::max(Game G, int current_depth, int max_depth){
 		if (maux.is_valid() == OK){
 			aux.apply(maux);
 			std::pair<int,int> score_column = min(aux,current_depth+1,max_depth);
+			
 			int score = score_column.first;			
 			if(score == best_score){
 				int random_number = rand() % 2;
