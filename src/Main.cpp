@@ -46,9 +46,9 @@ Player ask_starter(){
 void play_game_verbose(){
 //Choose AI here.
 	Player first = ask_p1_color();
-	Player_Abs* P1 = new Minmax_tweak_arthur(first, 1,3);
+	Player_Abs* P1 = new Minmax(first, 5,3);
 	//Player_Abs* P2 = new Human(opposite_player(first));
-	Player_Abs* P2 = new Minmax_tweak_arthur(opposite_player(first), 3,5);
+	Player_Abs* P2 = new Minmax(opposite_player(first), 5,3);
 	//Initialize the game, the human picked a color and who starts.
 	srand(time(NULL));
  
@@ -181,8 +181,8 @@ void test_AI_to_csv(Player_Abs* P1, Player_Abs* P2, std::string filename){
 }
 int main(int argc, char* argv[]) {
 	Game G;
-	Player_Abs* P1 = new Minmax_tweak_arthur(GREEN, 5, atoi(argv[1]));
-	Player_Abs* P2 = new Minmax_tweak_arthur(RED, 5, 3);
+	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
+	Player_Abs* P2 = new Minmax(RED, 5, 3);
     play_game_silent(P1,P2,G);
     
 	//play_game_verbose();

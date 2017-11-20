@@ -83,11 +83,14 @@ std::pair<int,int> Minmax::min(Game &G, int current_depth, int max_depth){
 	int best_score = std::numeric_limits<int>::max();
 	int best_column = 0;
 	for (int i = 0; i<7;i++){
-		Game aux(G);
-	 	Move maux(i,aux.get_turn(),aux);
+		//Game aux(G);
+		Move maux(i,G.get_turn(),G);
 		if (maux.is_valid() == OK){
-			aux.apply(maux);
-			std::pair<int,int> score_column = max(aux,current_depth+1,max_depth);
+			int empty_space = G.get_first_empty_space(i);
+			G.apply(maux);
+			std::pair<int,int> score_column = max(G,current_depth+1,max_depth);
+			G.set_turn(opposite_player(G.get_turn()));
+			G.set(empty_space,i,EMPTY);
 			int score = score_column.first;
 			if(score == best_score){
 				int random_number = rand() % 2;
@@ -116,12 +119,14 @@ std::pair<int,int> Minmax::max(Game &G, int current_depth, int max_depth){
 	int best_score = std::numeric_limits<int>::min();
 	int best_column = 0;
 	for (int i = 0; i<7;i++){
-		Game aux(G);
-		Move maux(i,aux.get_turn(),aux);
+		//Game aux(G);
+		Move maux(i,G.get_turn(),G);
 		if (maux.is_valid() == OK){
-			aux.apply(maux);
-			std::pair<int,int> score_column = min(aux,current_depth+1,max_depth);
-			
+			int empty_space = G.get_first_empty_space(i);
+			G.apply(maux);
+			std::pair<int,int> score_column = min(G,current_depth+1,max_depth);
+			G.set_turn(opposite_player(G.get_turn()));
+			G.set(empty_space,i,EMPTY);
 			int score = score_column.first;			
 			if(score == best_score){
 				int random_number = rand() % 2;
