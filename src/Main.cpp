@@ -11,6 +11,7 @@
 
 
 
+
 //const std::string ipnao = "128.39.75.111";
 /*const std::string ipnao = "127.0.0.1";
 AL::ALTextToSpeechProxy tts(ipnao, 9559);*/
@@ -46,9 +47,9 @@ Player ask_starter(){
 void play_game_verbose(){
 //Choose AI here.
 	Player first = ask_p1_color();
-	Player_Abs* P1 = new Minmax(first, 5,3);
+	Player_Abs* P1 = new Human(first);
 	//Player_Abs* P2 = new Human(opposite_player(first));
-	Player_Abs* P2 = new Minmax(opposite_player(first), 5,3);
+	Player_Abs* P2 = new Minmax_tweak_arthur(opposite_player(first), 5,5);
 	//Initialize the game, the human picked a color and who starts.
 	srand(time(NULL));
  
@@ -84,11 +85,13 @@ void play_game_silent(Player_Abs* P1, Player_Abs* P2, Game& G){
 		if (G.get_turn() == P1->get_color()) {    
 			Move m = P1->play(G);
 			G.apply(m);
+			
     	}
 		else {    
 			Move m = P2->play(G);
 			G.apply(m);
 		}
+		//std::cout<<G<<std::endl;
 	}
 }
 
@@ -179,28 +182,161 @@ void test_AI_to_csv(Player_Abs* P1, Player_Abs* P2, std::string filename){
 	myfile.close();
 
 }
+
+void test_AI_to_csv_lite(Player_Abs* P1, Player_Abs* P2, std::string filename){
+	std::ofstream myfile;
+	myfile.open (filename.c_str(), std::ios_base::app);
+	//myfile<<"Starter,P1name,P1weight,P1depth,P1color,P2name,P2weight,P2depth,P2color, Winner, TotalChips\n";
+	
+	//Basic games starting wherever the AI wants to, 1 time starting each.
+	for (int i = 0; i<3; i++){	
+		Game G;
+		G = Game(P1->get_color());
+		myfile<<player_name(G.get_turn())<<","<<P1->class_name()<<","<<P1->get_weight()<<","<<P1->get_depth()<<","<<player_name(P1->get_color())<<","<<P2->class_name()<<","<<P2->get_weight()<<","<<P2->get_depth()<<","<<player_name(P2->get_color())<<",";
+		play_game_silent(P1,P2,G);
+		Player winner = G.who_win();
+		myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
+	}
+	//Games where we force the AI to start on each column in the game. 
+	for (int i = 0; i<7; i++){	
+		Game G;
+		G = Game(P1->get_color());
+		G.play(i);
+		
+				//std::cout<<G<<std::endl;
+		myfile<<player_name(G.get_turn())<<","<<P1->class_name()<<","<<P1->get_weight()<<","<<P1->get_depth()<<","<<player_name(P1->get_color())<<","<<P2->class_name()<<","<<P2->get_weight()<<","<<P2->get_depth()<<","<<player_name(P2->get_color())<<",";
+		play_game_silent(P1,P2,G);
+		Player winner = G.who_win();
+		//std::cout<<G<<std::endl;
+		myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
+		}
+	
+	//Games where we for the AI to start on a column and the other AI to start on the another one. 
+		for (int i = 0; i<7; i++){	
+			for (int j = 0; j< 7; j++){
+			Game G;
+			G = Game(P1->get_color());
+			G.play(i);
+			G.play(j);
+		
+			
+			myfile<<player_name(G.get_turn())<<","<<P1->class_name()<<","<<P1->get_weight()<<","<<P1->get_depth()<<","<<player_name(P1->get_color())<<","<<P2->class_name()<<","<<P2->get_weight()<<","<<P2->get_depth()<<","<<player_name(P2->get_color())<<",";
+			play_game_silent(P1,P2,G);
+			Player winner = G.who_win();
+			myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
+		}
+	}
+	myfile.close();
+}
+
+void league(){
+	
+	std::vector<Player_Abs*> teams;
+	for (int i = 3; i<5; i++){
+		for (int j = 4; j<7;j++){
+			teams.push_back(new Minmax(GREEN, i, j));
+			teams.push_back(new Minmax_tweak(GREEN, i, j));
+			teams.push_back(new Minmax_tweak_arthur(GREEN, i, j));
+		}
+	}
+	
+	for (unsigned int i = 0; i<teams.size(); i++){
+		for (unsigned int j = i+1; j <teams.size(); j++){
+			teams[i]->set_color(GREEN);
+			teams[j]->set_color(RED);
+			test_AI_to_csv_lite(teams[j], teams[i], "League-Away.csv");
+			std::cout << i << " fight " << j << std::endl;
+		}
+	}
+}
+void short_league(){
+	
+	std::vector<Player_Abs*> teams;
+	for (int i = 3; i<4; i++){
+		for (int j = 3; j<8;j++){
+			teams.push_back(new Minmax(GREEN, i, j));
+			//teams.push_back(new Minmax_tweak(GREEN, i, j));
+			//teams.push_back(new Minmax_tweak_arthur(GREEN, i, j));
+		}
+	}
+	std::vector<int> result(teams.size());
+	std::vector<int> lose(teams.size());
+	std::vector<int> draw(teams.size());	
+	for (unsigned int i = 0; i<teams.size(); i++){
+		for (unsigned int j = i+1; j <teams.size(); j++){
+			teams[i]->set_color(GREEN);
+			teams[j]->set_color(RED);
+			Game G(RED),G2(GREEN);
+			std::cout << i << " fight " << j << std::endl;
+			play_game_silent(teams[i],teams[j],G);
+			play_game_silent(teams[i],teams[j],G2);
+			if (G.who_win() == GREEN){
+				result[i]++;
+				lose[j]++;
+				}
+			else if (G.who_win() == RED){
+				result[j]++;
+				lose[i]++;
+			}
+			else {
+				draw[i]++;
+				draw[j]++;
+			} 
+			
+			if (G2.who_win() == GREEN){
+				result[i]++;
+				lose[j]++;
+				}
+			else if (G2.who_win() == RED){
+				result[j]++;
+				lose[i]++;
+			}
+			else {
+				draw[i]++;
+				draw[j]++;
+			} 
+		}
+	}
+	//128.39.75.111
+	for (unsigned int i = 0; i<result.size(); i++){
+		std::cout<< " wins: " << result[i] <<" "
+		  				<< " loses: " << lose[i]<< " "
+		  				<< " draws: " << draw[i] <<" IA "
+		  				<< teams[i]->class_name() << " " 
+						<< teams[i]->get_weight() << " " 
+						<< teams[i]->get_depth() << " " 
+		  				<< std::endl;
+	} 
+}
 int main(int argc, char* argv[]) {
-	Game G;
+	srand(time(NULL));
+	/*Game G;
 	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
 	Player_Abs* P2 = new Minmax(RED, 5, 3);
     play_game_silent(P1,P2,G);
-    
-	//play_game_verbose();
-/*	 std::string filename = "MMTArthur5-3vsMMTArthurNoDepthDegressionx3.csv";
+    */
+	play_game_verbose();
+	 /*std::string filename = "Test_game_simmetry.csv";
 		std::ofstream myfile;
 	myfile.open (filename.c_str(), std::ios_base::app);
 	myfile<<"Starter,P1name,P1weight,P1depth,P1color,P2name,P2weight,P2depth,P2color, Winner, TotalChips\n";
 	myfile.close();
 	
-	Player_Abs* P2 = new Minmax_tweak_arthur(RED, 5, 3);
-	for (int depth = 1; depth<7; depth++){
-		for(int weight = 1; weight<11; weight++){
+	Player_Abs* P2 = new Minmax_tweak_arthur(RED, 4, 3);
+	for (int depth = 1; depth<10; depth++){
+		for(int weight = 4; weight<5; weight++){
 	Player_Abs* P1 = new Minmax_tweak_arthur(GREEN, weight, depth);
 	std::cout << "Doing weight-depth " << weight << "-" << depth << std::endl;
 	test_AI_to_csv(P1,P2, filename);
 	}
-	}*/
+	}
+	*/
 	
+	//for (int depth = 1; depth<11; depth++){
+	//Player_Abs* P1 = new Minmax_tweak_arthur(GREEN, 4, 3);
+	//std::cout << "Doing weight-depth " << "4" << "-" << depth << std::endl;
+	//test_AI_to_csv_lite(P1,P2, filename);
+	//}
 
 	
 	/*Game G(RED);

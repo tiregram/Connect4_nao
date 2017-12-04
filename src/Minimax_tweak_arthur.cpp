@@ -17,7 +17,7 @@ int Minmax_tweak_arthur::compare_4(Player p, Board_state val_1, Board_state val_
  			- (((p_c_o == val_1) * weight + (val_1 == EMPTY)) *
  			 ((p_c_o == val_2) * weight + (val_2 == EMPTY)) * 
  			 ((p_c_o == val_3) * weight + (val_3 == EMPTY)) * 
- 			 ((p_c_o == val_4) * weight + (val_4 == EMPTY)))*3)
+ 			 ((p_c_o == val_4) * weight + (val_4 == EMPTY)))*3/2)
 			* !(val_1 == EMPTY && val_2 == EMPTY && val_3 == EMPTY && val_4 == EMPTY);
 }
 

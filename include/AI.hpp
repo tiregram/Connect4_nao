@@ -15,6 +15,7 @@ public:
 
   virtual Move play(Game G) = 0;
   Player get_color(){ return color;}; 
+  void set_color(Player p){ this->color = p;}; 
   virtual std::string class_name() = 0;
   virtual int get_depth() = 0;
   virtual int get_weight() = 0;

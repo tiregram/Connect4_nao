@@ -1,0 +1,15 @@
+0 fight 1
+0 fight 2
+0 fight 3
+0 fight 4
+1 fight 2
+1 fight 3
+1 fight 4
+2 fight 3
+2 fight 4
+3 fight 4
+ wins: 1  loses: 7  draws: 0 IA Minmax 3 3 
+ wins: 3  loses: 4  draws: 1 IA Minmax 3 4 
+ wins: 5  loses: 2  draws: 1 IA Minmax 3 5 
+ wins: 5  loses: 3  draws: 0 IA Minmax 3 6 
+ wins: 5  loses: 3  draws: 0 IA Minmax 3 7 

@@ -15,7 +15,7 @@ Move Minmax::play(Game G){
 }
 
 //Comparison of 4 Board_states. Used in evaluation function.
-int Minmax::compare_4(Player p, Board_state val_1, Board_state val_2, Board_state val_3, Board_state val_4){
+inline int Minmax::compare_4(Player p, Board_state val_1, Board_state val_2, Board_state val_3, Board_state val_4){
 	Board_state p_c = player_to_board_state(p);
 	Board_state p_c_o = player_to_board_state(opposite_player(p));
 	//Encourages multiple pieces of the same color with empty spaces rather than with opposite pieces. If everything is empty, score is 0. 
