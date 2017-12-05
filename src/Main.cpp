@@ -56,28 +56,21 @@ Player ask_starter(){
 	if (c == 'G' || c == 'g') return GREEN;
 	else return RED;
 }
-void play_game_real_board(){
-srand(time(NULL));
-Player_Abs* Human_player = new Human(GREEN);
-Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
-Game A(RED);
-std::cout << A << std::endl;
 
-while (!(A.is_over())) {
-		if (A.get_turn() == Human_player->get_color()) {    
-			Move m = Human_player->play(A);
-			A.apply(m);
-    	}
-		else {    
-			Move m = Nao->play(A);
-			A.apply(m);
-			//if (!A.is_over()) after_nao_turn(tts);
+Game vision_to_game(std::vector<CV_BOARD_STATE> cv_game){
+Game g;
+for(int y = 0; y < 6 ;y++ )
+    {
+      for(int x = 0; x <7 ;x++ )
+        {
+          int v = cv_game[x+y*7];
+          if (v == CV_RED) g.set(5-y,x,BS_RED);
+          else if (v == CV_GREEN) g.set(5-y,x,BS_GREEN);
 		}
-		std::cout << A << std::endl;
-	}
-	Player Result = A.who_win();
-
+    }
+    return g;
 }
+
 
 void play_game_verbose(){
 //Choose AI here.
@@ -343,9 +336,59 @@ void short_league(){
 		  				<< std::endl;
 	} 
 }
+
+void play_game_real_board(){
+srand(time(NULL));
+cv::VideoCapture vcap;
+ if(!vcap.open("tcp://128.39.75.111:3001")) {
+    std::cout << "Error opening video stream or file" << std::endl;
+  }
+  Cv_c4_option opt;
+  opt.load("save.cvconf");
+  
+  Cv_c4 cv(opt);
+  std::vector<CV_BOARD_STATE> old_board(6*7,CV_VIDE);
+  CV_BOARD_STATE expect = CV_RED;
+  Cv_c4_optim  optim_cv(cv);
+  
+  
+Player_Abs* Human_player = new Human(GREEN);
+Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
+Game A(RED);
+std::cout << A << std::endl;
+int nextplay = 0;
+while (!(A.is_over())) {
+		if (A.get_turn() == Human_player->get_color()) { 
+		    expect = CV_GREEN;   
+			old_board = optim_cv.predict_next_board(old_board,8,10,vcap,expect);
+			A = vision_to_game(old_board);
+			A.set_turn(RED);
+    	}
+		else {    
+			
+			Move m = Nao->play(A);
+			//A.apply(m);
+			nextplay = m.column;
+			play_on_row(nextplay,TTS);
+			expect = CV_RED;
+			old_board = optim_cv.predict_next_board(old_board,8,10,vcap,expect);
+			A = vision_to_game(old_board);
+			A.set_turn(GREEN);
+			//if (vision_to_game(old_board) != A)  
+			
+			
+			//if (!A.is_over()) after_nao_turn(tts);
+		}
+		std::cout << A << std::endl;
+	}
+	Player Result = A.who_win();
+
+}
+
 int main(int argc, char* argv[]) {
 	srand(time(NULL));
 	
+	/*
 	  cv::VideoCapture vcap;
  if(argc!=4)
     {
@@ -374,9 +417,9 @@ int main(int argc, char* argv[]) {
 
       return 0;
     }
+*/
 
-
-human_start(TTS);
+//human_start(TTS);
 play_game_real_board();
 	/*Game G;
 	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
