@@ -72,13 +72,13 @@ std::pair<int,int> Minmax::min(Game &G, int current_depth, int max_depth){
 
 	Player winner = G.who_win();
 	if (winner == this->get_color()){
-		return std::make_pair<int,int>(evaluate(G),-1);
+		return std::make_pair(evaluate(G),-1);
 	}
 	else if (winner == opposite_player(this->get_color())){
-		return std::make_pair<int,int>(-evaluate(G),-1);
+		return std::make_pair(-evaluate(G),-1);
 	}
 	else if (G.total_chips() == 42 || current_depth == max_depth){
-		return std::make_pair<int,int>(evaluate(G),-1);
+		return std::make_pair(evaluate(G),-1);
 	}	
 	int best_score = std::numeric_limits<int>::max();
 	int best_column = 0;
@@ -102,19 +102,19 @@ std::pair<int,int> Minmax::min(Game &G, int current_depth, int max_depth){
 			}
 		}
 	}
-	return std::make_pair<int,int>(best_score, best_column);
+	return std::make_pair(best_score, best_column);
 }
 
 std::pair<int,int> Minmax::max(Game &G, int current_depth, int max_depth){
 	Player winner = G.who_win();
 	if (winner == opposite_player(this->get_color())){
-		return std::make_pair<int,int>(-evaluate(G),-1);
+		return std::make_pair(-evaluate(G),-1);
 	}
 	else if (winner == this->get_color()){
-		return std::make_pair<int,int>(evaluate(G),-1);
+		return std::make_pair(evaluate(G),-1);
 	}
 	else if (G.total_chips() == 42 || current_depth == max_depth){
-		return std::make_pair<int,int>(evaluate(G),-1);
+		return std::make_pair(evaluate(G),-1);
 	}	
 	int best_score = std::numeric_limits<int>::min();
 	int best_column = 0;
@@ -138,5 +138,5 @@ std::pair<int,int> Minmax::max(Game &G, int current_depth, int max_depth){
 			}
 		}
 	}
-	return std::make_pair<int,int>(best_score, best_column);
+	return std::make_pair(best_score, best_column);
 }

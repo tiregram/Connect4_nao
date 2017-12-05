@@ -35,7 +35,7 @@ int Minmax_tweak::evaluate(Game G){
 		for(int j = 0; j<4; j++){
 			total_score += compare_4(player, G.get(i,j), G.get(i,j+1), G.get(i,j+2), G.get(i,j+3));
 			int res = compare_4_trick(player,G.get(i,j), G.get(i,j+1), G.get(i,j+2), G.get(i,j+3));
-			if (res > -1) v.push_back(std::make_pair<int,int>(i,j+res));
+			if (res > -1) v.push_back(std::make_pair(i,j+res));
 			
 		}
 	}
@@ -45,7 +45,7 @@ int Minmax_tweak::evaluate(Game G){
 		for(int j = 0; j<7; j++){
 			total_score += compare_4(player, G.get(i,j), G.get(i+1,j), G.get(i+2,j), G.get(i+3,j));
 			int res = compare_4_trick(player,G.get(i,j), G.get(i+1,j), G.get(i+2,j), G.get(i+3,j));
-			if (res > -1) v.push_back(std::make_pair<int,int>(i+res,j));
+			if (res > -1) v.push_back(std::make_pair(i+res,j));
 		}
 	}
 	
@@ -54,7 +54,7 @@ int Minmax_tweak::evaluate(Game G){
 		for(int j = 0; j<4; j++){
 			total_score += compare_4(player, G.get(i,j), G.get(i+1,j+1), G.get(i+2,j+2), G.get(i+3,j+3));
 			int res = compare_4_trick(player,G.get(i,j), G.get(i+1,j+1), G.get(i+2,j+2), G.get(i+3,j+3));
-			if (res > -1) v.push_back(std::make_pair<int,int>(i+res,j+res));
+			if (res > -1) v.push_back(std::make_pair(i+res,j+res));
 		}
 	}
 	
@@ -63,7 +63,7 @@ int Minmax_tweak::evaluate(Game G){
 		for(int j = 3; j<7; j++){
 			total_score += compare_4(player, G.get(i,j), G.get(i+1,j-1), G.get(i+2,j-2), G.get(i+3,j-3));
 			int res = compare_4_trick(player,G.get(i,j), G.get(i+1,j-1), G.get(i+2,j-2), G.get(i+3,j-3));
-			if (res > -1) v.push_back(std::make_pair<int,int>(i+res,j-res));
+			if (res > -1) v.push_back(std::make_pair(i+res,j-res));
 		}
 	}
 	

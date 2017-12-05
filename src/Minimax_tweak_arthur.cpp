@@ -24,8 +24,8 @@ int Minmax_tweak_arthur::compare_4(Player p, Board_state val_1, Board_state val_
 std::pair<int,int> Minmax_tweak_arthur::min(Game& G, int current_depth, int max_depth){
 	
 	if (G.is_over() || current_depth == max_depth){
-		//return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
-		return std::make_pair<int,int>(evaluate(G),-1);
+		//return std::make_pair(evaluate(G)/(current_depth+1),-1);
+		return std::make_pair(evaluate(G),-1);
 	}
 	
 	int best_score = std::numeric_limits<int>::max();
@@ -47,7 +47,7 @@ std::pair<int,int> Minmax_tweak_arthur::min(Game& G, int current_depth, int max_
 			}
 		}
 	}
-	return std::make_pair<int,int>(best_score, best_column);
+	return std::make_pair(best_score, best_column);
 }
 
 std::pair<int,int> Minmax_tweak_arthur::max(Game& G, int current_depth, int max_depth){
@@ -55,8 +55,8 @@ std::pair<int,int> Minmax_tweak_arthur::max(Game& G, int current_depth, int max_
 
 
 	if (G.is_over() || current_depth == max_depth){
-		//return std::make_pair<int,int>(evaluate(G)/(current_depth+1),-1);
-		return std::make_pair<int,int>(evaluate(G),-1);
+		//return std::make_pair(evaluate(G)/(current_depth+1),-1);
+		return std::make_pair(evaluate(G),-1);
 	}
 
 	int best_score = std::numeric_limits<int>::min();
@@ -78,6 +78,6 @@ std::pair<int,int> Minmax_tweak_arthur::max(Game& G, int current_depth, int max_
 			}
 		}
 	}
-	return std::make_pair<int,int>(best_score, best_column);
+	return std::make_pair(best_score, best_column);
 	
 }

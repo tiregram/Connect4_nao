@@ -1,20 +1,33 @@
-#include "Game.hpp"
-#include "iostream"
-//#include "../include/Reactions.hpp"
-#include "../include/Minmax.hpp"
-#include "../include/Minmax_tweak.hpp"
-#include "../include/Minmax_tweak_arthur.hpp"
-#include "../include/Basic.hpp"
-#include "../include/Human.hpp"
+#include <iostream>
+#include <string>
 #include <fstream>
 #include <typeinfo>
+#include "Game.hpp"
+#include "Reactions.hpp"
+#include "Minmax.hpp"
+#include "Minmax_tweak.hpp"
+#include "Minmax_tweak_arthur.hpp"
+#include "Basic.hpp"
+#include "Human.hpp"
+#include <opencv2/opencv.hpp>
+#include "Cv_c4_option_helper.hpp"
+#include "Cv_c4_optim.hpp"
 
 
 
 
-//const std::string ipnao = "128.39.75.111";
-/*const std::string ipnao = "127.0.0.1";
-AL::ALTextToSpeechProxy tts(ipnao, 9559);*/
+
+const std::string ipnao = "128.39.75.111";
+AL::ALTextToSpeechProxy TTS(ipnao, 9559);
+
+void config_run(Cv_c4_option_helper& cvh,  cv::VideoCapture vcap) {
+  cv::Mat image;
+  vcap.read(image);
+  cvh.chose_blue(image);
+  cvh.chose_red(image);
+  cvh.chose_green(image);
+  std::cout << cvh.cv.opt<<std::endl;
+}
 
 //We ask the color for player 1
 Player ask_p1_color(){
@@ -42,6 +55,28 @@ Player ask_starter(){
 	}
 	if (c == 'G' || c == 'g') return GREEN;
 	else return RED;
+}
+void play_game_real_board(){
+srand(time(NULL));
+Player_Abs* Human_player = new Human(GREEN);
+Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
+Game A(RED);
+std::cout << A << std::endl;
+
+while (!(A.is_over())) {
+		if (A.get_turn() == Human_player->get_color()) {    
+			Move m = Human_player->play(A);
+			A.apply(m);
+    	}
+		else {    
+			Move m = Nao->play(A);
+			A.apply(m);
+			//if (!A.is_over()) after_nao_turn(tts);
+		}
+		std::cout << A << std::endl;
+	}
+	Player Result = A.who_win();
+
 }
 
 void play_game_verbose(){
@@ -310,12 +345,45 @@ void short_league(){
 }
 int main(int argc, char* argv[]) {
 	srand(time(NULL));
+	
+	  cv::VideoCapture vcap;
+ if(argc!=4)
+    {
+      std::cout << "need 4 arg" << "\n";
+    }
+  // This works on a D-Link CDS-932L
+  std::cout << argv[1] << "\n";
+  std::string videoStreamAddress(argv[1]);
+
+  //open the video stream and make sure it's opened
+  if(!vcap.open(videoStreamAddress)) {
+    std::cout << "Error opening video stream or file" << std::endl;
+    return -1;
+  }
+
+  Cv_c4_option opt;
+  opt.load(argv[2]);
+
+
+
+  if(std::string(argv[3]) == "config")
+    {
+      Cv_c4_option_helper cvh(opt);
+      config_run(cvh, vcap);
+      cvh.cv.opt.save(std::string(argv[2]));
+
+      return 0;
+    }
+
+
+human_start(TTS);
+play_game_real_board();
 	/*Game G;
 	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
 	Player_Abs* P2 = new Minmax(RED, 5, 3);
     play_game_silent(P1,P2,G);
     */
-	play_game_verbose();
+	//play_game_verbose();
 	 /*std::string filename = "Test_game_simmetry.csv";
 		std::ofstream myfile;
 	myfile.open (filename.c_str(), std::ios_base::app);
