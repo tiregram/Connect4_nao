@@ -413,7 +413,8 @@ cv::VideoCapture vcap;
   CV_BOARD_STATE expect = CV_RED;
   Cv_c4_optim  optim_cv(cv);
 
-
+initial_phrase(TTS);
+sleep(3);
 Player_Abs* Human_player = new Human(GREEN);
 Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
 vcap.read(image);
@@ -445,19 +446,23 @@ while (!(A.is_over())) {
 			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(GREEN);
-			if (A == copy_A) after_nao_turn(TTS);
-			else cheat(TTS,Tracker);
+			if (A == copy_A && !(A.is_over()))
+        {after_nao_turn(TTS);}
+			else
+        {cheat(TTS,Tracker);}
 			//if (vision_to_game(old_board) != A)
-
 
 			//if (!A.is_over()) after_nao_turn(tts);
 		}
 		std::cout << A << std::endl;
 	}
 	Player Result = A.who_win();
-	if (Result == RED) nao_win(TTS,Tracker);
-	if (Result == GREEN) nao_lose(TTS);
-	else nao_draw(TTS);
+	if (Result == RED)
+    {nao_win(TTS,Tracker);}
+  else	if (Result == GREEN)
+    {nao_lose(TTS);}
+	else
+    {nao_draw(TTS);}
 }
 
 void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy) {
@@ -556,8 +561,8 @@ int main(int argc, char* argv[]) {
 */
 
 //human_start(TTS);
-//play_game_real_board();
-nao_win(TTS,Tracker);
+play_game_real_board();
+//nao_win(TTS,Tracker);
 	/*Game G;
 	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
 	Player_Abs* P2 = new Minmax(RED, 5, 3);

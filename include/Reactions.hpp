@@ -36,8 +36,9 @@ std::string playOnRow[] = {
   "I will play on row number ",
   "I choose row number ",
   "My move is on row ",
-  "Let me think... I guess I'll play on row number ",
-  "Easy choice for me, row number "
+  "Let me think... I guess I'll play on ",
+  "Easy choice for me, row ",
+  "Can you please play for me on "
 };
 
 std::string afterHumanTurn[] = {
@@ -45,7 +46,9 @@ std::string afterHumanTurn[] = {
   "Good choice. Now it's my turn.",
   "Now I'll go.",
   "It's my time to shine!",
-  "What do I do now..."
+  "What do I do now...",
+  "Exactly what I expected you to do! My turn!",
+  "I didn't expect that move, interesting... let's see..."
 };
 
 std::string afterNaoTurn[] = {
@@ -53,7 +56,9 @@ std::string afterNaoTurn[] = {
   "It's your turn now.",
   "You're up next!",
   "Hurry up, your move!",
-  "You didn't expect that did you? Keep going!"
+  "You didn't expect that did you? Keep going!",
+  "Keep going!",
+  "Come on human, play"
 };
 
 std::string naoWin[] = {
@@ -124,21 +129,21 @@ void nao_start(AL::ALTextToSpeechProxy voiceproxy){
 
 void play_on_row(int row, AL::ALTextToSpeechProxy voiceproxy){
 	std::ostringstream ss;
-	ss << playOnRow[rand() %5] << (row+1);
+	ss << playOnRow[rand() %6] << (row+1);
 	voiceproxy.say(ss.str());
 
 }
 
 void after_human_turn(AL::ALTextToSpeechProxy voiceproxy){
 
-	const std::string phrase=afterHumanTurn[rand() %5];
+	const std::string phrase=afterHumanTurn[rand() %7];
 	voiceproxy.say(phrase);
 
 }
 
 void after_nao_turn(AL::ALTextToSpeechProxy voiceproxy){
 
-	const std::string phrase=afterNaoTurn[rand() %5];
+	const std::string phrase=afterNaoTurn[rand() %7];
 	voiceproxy.say(phrase);
 
 }
@@ -149,7 +154,7 @@ void nao_win(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy
 	uparms = {0.4,1,0.6};
 	downarms ={0,0,-1};
 	headdown = {1,0,-1};
-	headup = {1,0,0};
+	headup = {10,0,0};
 	const std::string phrase=naoWin[rand() %3];
 	std::thread vt(say_phrase,voiceproxy,phrase);
 	std::thread vt2(do_lookAt,trackerproxy,headdown,0.4);
@@ -181,7 +186,7 @@ void cheat(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy){
 	std::vector<float> left(3), right(3), center(3);
 	right = {1, 0.8, -0.2};
 	left = {1, -0.8, -0.2};
-	center = {1, 0, 0};
+	center = {10, 0, 0};
 	const std::string phrase=cheating[rand() %3];
 	//std::thread vt(lapin);
 	std::thread vt(say_phrase,voiceproxy,phrase);
@@ -201,3 +206,9 @@ void think(AL::ALTextToSpeechProxy voiceproxy){
 	voiceproxy.say(phrase);
 
 }
+
+void initial_phrase(AL::ALTextToSpeechProxy voiceproxy){
+	const std::string phrase = "Hey human, do you want to play a game of connect four with me ?";
+	voiceproxy.say(phrase);
+}
+
