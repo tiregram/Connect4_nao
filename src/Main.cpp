@@ -372,8 +372,8 @@ while (!(A.is_over())) {
 			A.set_turn(RED);
 			after_human_turn(TTS);
     	}
-		else {    
-			
+		else {
+
 			Move m = Nao->play(A);
 			Game copy_A = A;
 			copy_A.apply(m);
@@ -384,24 +384,28 @@ while (!(A.is_over())) {
 			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(GREEN);
-			if (A == copy_A) after_nao_turn(TTS);
-			else cheat(TTS,Tracker);
-			//if (vision_to_game(old_board) != A)  
-			
-			
+			if (A == copy_A)
+        {after_nao_turn(TTS);}
+			else
+        {cheat(TTS,Tracker);}
+			//if (vision_to_game(old_board) != A)
+
 			//if (!A.is_over()) after_nao_turn(tts);
 		}
 		std::cout << A << std::endl;
 	}
 	Player Result = A.who_win();
-	if (Result == RED) nao_win(TTS,Tracker);
-	if (Result == GREEN) nao_lose(TTS);
-	else nao_draw(TTS);
+	if (Result == RED)
+    {nao_win(TTS,Tracker);}
+  else	if (Result == GREEN)
+    {nao_lose(TTS);}
+	else
+    {nao_draw(TTS);}
 }
 
 int main(int argc, char* argv[]) {
 	srand(time(NULL));
-	
+
 	/*
 	  cv::VideoCapture vcap;
  if(argc!=4)
@@ -434,8 +438,8 @@ int main(int argc, char* argv[]) {
 */
 
 //human_start(TTS);
-//play_game_real_board();
-nao_win(TTS,Tracker);
+play_game_real_board();
+//nao_win(TTS,Tracker);
 	/*Game G;
 	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
 	Player_Abs* P2 = new Minmax(RED, 5, 3);

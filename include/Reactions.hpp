@@ -149,7 +149,7 @@ void nao_win(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy
 	uparms = {0.4,1,0.6};
 	downarms ={0,0,-1};
 	headdown = {1,0,-1};
-	headup = {1,0,0};
+	headup = {10,0,0};
 	const std::string phrase=naoWin[rand() %3];
 	std::thread vt(say_phrase,voiceproxy,phrase);
 	std::thread vt2(do_lookAt,trackerproxy,headdown,0.4);
@@ -181,7 +181,7 @@ void cheat(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy){
 	std::vector<float> left(3), right(3), center(3);
 	right = {1, 0.8, -0.2};
 	left = {1, -0.8, -0.2};
-	center = {1, 0, 0};
+	center = {10, 0, 0};
 	const std::string phrase=cheating[rand() %3];
 	//std::thread vt(lapin);
 	std::thread vt(say_phrase,voiceproxy,phrase);
