@@ -14,9 +14,6 @@
 #include "Cv_c4_optim.hpp"
 
 
-
-
-
 const std::string ipnao = "128.39.75.111";
 AL::ALTextToSpeechProxy TTS(ipnao, 9559);
 AL::ALTrackerProxy Tracker(ipnao, 9559);
