@@ -1,8 +1,12 @@
+#pragma once
 #include <alerror/alerror.h>
 #include <alproxies/altexttospeechproxy.h>
+#include <alproxies/altrackerproxy.h>
 #include <iostream>
 #include <cstring>
 #include <time.h>
+#include <thread>
+
 
 std::string isRed[] = {
   "OK! I'll be red and you'll be green.",
@@ -70,6 +74,29 @@ std::string naoDraw[] = {
   "I suppose nobody wins!"
 };
 
+std::string cheating[] = {
+  "Didn't anyone teach you that cheating is bad?",
+  "Don't cheat, it's against the three laws of robotics!",
+  "I see you're cheating, but I will win anyways!"
+  };
+  
+std::string thinking[] = {
+  "Let me think...",
+  "Huuuuuuum",
+  "Wait a second..."
+};
+
+void say_phrase(AL::ALTextToSpeechProxy voiceproxy, const std::string &phrase){
+
+voiceproxy.say(phrase);
+}
+
+void do_lookAt(AL::ALTrackerProxy trackerproxy, const std::vector<float> &look, const float speed){
+
+trackerproxy.lookAt(look, 0, speed, false);
+
+}
+
 void nao_is_red(AL::ALTextToSpeechProxy voiceproxy){
 
 	const std::string phrase=isRed[rand() %3];
@@ -116,10 +143,22 @@ void after_nao_turn(AL::ALTextToSpeechProxy voiceproxy){
 
 }
 
-void nao_win(AL::ALTextToSpeechProxy voiceproxy){
-
+void nao_win(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy){
+	
+	std::vector<float> uparms(3), downarms(3), headdown(3), headup(3);
+	uparms = {0.4,1,0.6};
+	downarms ={0,0,-1};
+	headdown = {1,0,-1};
+	headup = {1,0,0};
 	const std::string phrase=naoWin[rand() %3];
-	voiceproxy.say(phrase);
+	std::thread vt(say_phrase,voiceproxy,phrase);
+	std::thread vt2(do_lookAt,trackerproxy,headdown,0.4);
+	trackerproxy.pointAt("Arms",uparms,0,0.4);
+	vt.join();
+	vt2.join();
+	std::thread vt3(do_lookAt,trackerproxy,headup,0.4);
+	trackerproxy.pointAt("Arms",downarms,0,0.4);
+	vt3.join();
 
 }
 
@@ -133,6 +172,32 @@ void nao_lose(AL::ALTextToSpeechProxy voiceproxy){
 void nao_draw(AL::ALTextToSpeechProxy voiceproxy){
 
 	const std::string phrase=naoDraw[rand() %3];
+	voiceproxy.say(phrase);
+
+}
+
+void cheat(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy){
+
+	std::vector<float> left(3), right(3), center(3);
+	right = {1, 0.8, -0.2};
+	left = {1, -0.8, -0.2};
+	center = {1, 0, 0};
+	const std::string phrase=cheating[rand() %3];
+	//std::thread vt(lapin);
+	std::thread vt(say_phrase,voiceproxy,phrase);
+	trackerproxy.lookAt(left, 0, 0.4, false);
+	trackerproxy.lookAt(right, 0, 0.4, false);
+	trackerproxy.lookAt(left, 0, 0.4, false);
+	trackerproxy.lookAt(right, 0, 0.4, false);
+	trackerproxy.lookAt(center, 0, 0.4, false);
+	vt.join();
+		
+	
+}
+
+void think(AL::ALTextToSpeechProxy voiceproxy){
+
+	const std::string phrase=thinking[rand() %3];
 	voiceproxy.say(phrase);
 
 }

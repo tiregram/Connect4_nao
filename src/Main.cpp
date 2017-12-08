@@ -19,6 +19,7 @@
 
 const std::string ipnao = "128.39.75.111";
 AL::ALTextToSpeechProxy TTS(ipnao, 9559);
+AL::ALTrackerProxy Tracker(ipnao, 9559);
 
 void config_run(Cv_c4_option_helper& cvh,  cv::VideoCapture vcap) {
   cv::Mat image;
@@ -344,6 +345,7 @@ cv::VideoCapture vcap;
     std::cout << "Error opening video stream or file" << std::endl;
   }
   Cv_c4_option opt;
+  cv::Mat image;
   opt.load("save.cvconf");
   
   Cv_c4 cv(opt);
@@ -354,26 +356,36 @@ cv::VideoCapture vcap;
   
 Player_Abs* Human_player = new Human(GREEN);
 Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
-Game A(RED);
+vcap.read(image);
+old_board = cv.predict_board(image);
+Game A = vision_to_game(old_board);
+A.set_turn(RED);
 std::cout << A << std::endl;
 int nextplay = 0;
+nao_is_red(TTS);
+nao_start(TTS);
 while (!(A.is_over())) {
 		if (A.get_turn() == Human_player->get_color()) { 
 		    expect = CV_GREEN;   
-			old_board = optim_cv.predict_next_board(old_board,8,10,vcap,expect);
+			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(RED);
+			after_human_turn(TTS);
     	}
 		else {    
 			
 			Move m = Nao->play(A);
-			//A.apply(m);
+			Game copy_A = A;
+			copy_A.apply(m);
 			nextplay = m.column;
-			play_on_row(nextplay,TTS);
 			expect = CV_RED;
-			old_board = optim_cv.predict_next_board(old_board,8,10,vcap,expect);
+			//think(TTS);
+			play_on_row(nextplay,TTS);
+			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(GREEN);
+			if (A == copy_A) after_nao_turn(TTS);
+			else cheat(TTS,Tracker);
 			//if (vision_to_game(old_board) != A)  
 			
 			
@@ -382,7 +394,9 @@ while (!(A.is_over())) {
 		std::cout << A << std::endl;
 	}
 	Player Result = A.who_win();
-
+	if (Result == RED) nao_win(TTS,Tracker);
+	if (Result == GREEN) nao_lose(TTS);
+	else nao_draw(TTS);
 }
 
 int main(int argc, char* argv[]) {
@@ -420,7 +434,8 @@ int main(int argc, char* argv[]) {
 */
 
 //human_start(TTS);
-play_game_real_board();
+//play_game_real_board();
+nao_win(TTS,Tracker);
 	/*Game G;
 	Player_Abs* P1 = new Minmax(GREEN, 5, atoi(argv[1]));
 	Player_Abs* P2 = new Minmax(RED, 5, 3);
