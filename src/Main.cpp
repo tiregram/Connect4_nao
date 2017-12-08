@@ -12,11 +12,96 @@
 #include <opencv2/opencv.hpp>
 #include "Cv_c4_option_helper.hpp"
 #include "Cv_c4_optim.hpp"
+#include <opencv2/highgui.hpp>
+#include <opencv2/aruco.hpp>
+
+#include <alcommon/albroker.h>
+#include <alcommon/almodule.h>
+#include <alcommon/albrokermanager.h>
+#include <alcommon/altoolsmain.h>
+#include <alproxies/almotionproxy.h>
+#include <alproxies/altrackerproxy.h>
+#include <alproxies/alrobotpostureproxy.h>
+#include <almath/types/alpose2d.h>
+#include <almath/tools/aldubinscurve.h>
+#include <almath/tools/almathio.h>
+#include <almath/tools/almath.h>
+#include <almath/tools/altrigonometry.h>
 
 
 const std::string ipnao = "128.39.75.111";
 AL::ALTextToSpeechProxy TTS(ipnao, 9559);
 AL::ALTrackerProxy Tracker(ipnao, 9559);
+
+static bool readCameraParameters(std::string filename, cv::Mat &camMatrix, cv::Mat &distCoeffs) {
+    cv::FileStorage fs(filename, cv::FileStorage::READ);
+    if(!fs.isOpened())
+        return false;
+    fs["camera_matrix"] >> camMatrix;
+    fs["distortion_coefficients"] >> distCoeffs;
+    return true;
+}
+
+void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy) {
+
+  const std::string effector = "RArm";
+  const std::string calibFile = "nao.txt";
+  int markerCount = 2;
+  int dictionaryId = 0;
+  float markerLength = 0.01; // [m]
+  cv::Mat camMatrix, distCoeffs;
+  bool readOk = readCameraParameters(calibFile, camMatrix, distCoeffs);
+  if(!readOk) {
+      std::cerr << "Invalid camera file" << std::endl;
+  }
+  cv::Ptr<cv::aruco::Dictionary> dictionary =
+      cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+  cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
+  detectorParams->cornerRefinementMethod = cv::aruco::CORNER_REFINE_SUBPIX; // do corner refinement in markers
+
+  double *p[markerCount];
+  while(vcap.grab() && p[0] == NULL && p[1] == NULL) {
+    cv::Mat image, imageCopy;
+    vcap.retrieve(image);
+    std::vector< double > x(markerCount), y(markerCount), z(markerCount);
+    double *p[markerCount];
+    for (unsigned int j = 0; j < markerCount; j++) {
+        p[j] = &x[j];
+    }
+    std::vector< std::vector< cv::Point2f > > corners, rejected;
+    std::vector< int > ids(markerCount);
+    std::vector< cv::Vec3d > rvecs, tvecs;
+
+    cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+    cv::aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
+                                     tvecs);
+    image.copyTo(imageCopy);
+    cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
+    for(unsigned int i = 0; i < ids.size(); i++) {
+        x[ids[i]] = tvecs[i][0];
+        y[ids[i]] = tvecs[i][1];
+        z[ids[i]] = tvecs[i][2];
+        cv::aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
+                        markerLength * 0.5f);
+    }
+    if(rejected.size() > 0)
+        cv::aruco::drawDetectedMarkers(imageCopy, rejected, cv::noArray(), cv::Scalar(100, 0, 255));
+    imshow("out", imageCopy);
+
+    float x_total = (float)x[1] - (float)x[0];
+    float dx = x_total/8;
+    //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
+    float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
+    std::vector<float> vv(&v[0],&v[0]+3);
+    trackerProxy.pointAt(effector, vv, 0, 0.2);
+
+    float u[3] = {(float)z[0], -(float)x[1], -(float)y[0]};
+    std::vector<float> uu(&v[0],&v[0]+3);
+    trackerProxy.pointAt(effector, uu, 0, 0.2);
+
+  }
+
+}
 
 void config_run(Cv_c4_option_helper& cvh,  cv::VideoCapture vcap) {
   cv::Mat image;
@@ -78,7 +163,7 @@ void play_game_verbose(){
 	Player_Abs* P2 = new Minmax_tweak_arthur(opposite_player(first), 5,5);
 	//Initialize the game, the human picked a color and who starts.
 	srand(time(NULL));
- 
+
 	Game A(ask_starter());
   	/*if (Starter == Human) human_start(tts);
 	else nao_start(tts);*/
@@ -87,11 +172,11 @@ void play_game_verbose(){
 
 	//After every turn, we check if the game is over. If it's not, we check if it's P1 turn or P2 turn.
 	while (!(A.is_over())) {
-		if (A.get_turn() == P1->get_color()) {    
+		if (A.get_turn() == P1->get_color()) {
 			Move m = P1->play(A);
 			A.apply(m);
     	}
-		else {    
+		else {
 			Move m = P2->play(A);
 			A.apply(m);
 			//if (!A.is_over()) after_nao_turn(tts);
@@ -108,12 +193,12 @@ void play_game_verbose(){
 void play_game_silent(Player_Abs* P1, Player_Abs* P2, Game& G){
 
 	while (!(G.is_over())) {
-		if (G.get_turn() == P1->get_color()) {    
+		if (G.get_turn() == P1->get_color()) {
 			Move m = P1->play(G);
 			G.apply(m);
-			
+
     	}
-		else {    
+		else {
 			Move m = P2->play(G);
 			G.apply(m);
 		}
@@ -127,17 +212,17 @@ void test_AI(){
 	int red_wins = 0;
 	int green_wins = 0;
 	int draws = 0;
-	
+
 	//for(int j_depth = 3; j_depth <=7; j_depth++){
-		for (int j_weight = 3;j_weight<=20;j_weight++){	
+		for (int j_weight = 3;j_weight<=20;j_weight++){
 			Player_Abs* P1 = new Minmax(RED,j_weight,3);
 			//for(int i_depth = 3; i_depth <=7; i_depth++){
-				for (int i_weight = 3;i_weight<=20;i_weight++){	
+				for (int i_weight = 3;i_weight<=20;i_weight++){
 					Player_Abs* P2 = new Minmax(GREEN,i_weight,3);
 					Game G(RED);
 					play_game_silent(P1,P2,G);
 					Player winner = G.who_win();
-					std::cout<<"R depth: " << "3" << " R Weight: "<< j_weight<<" G Depth: " << "3" << " G Weight: "<< i_weight << " Winner: "<< player_name(winner) << " Total moves: " << G.total_chips() << std::endl; 
+					std::cout<<"R depth: " << "3" << " R Weight: "<< j_weight<<" G Depth: " << "3" << " G Weight: "<< i_weight << " Winner: "<< player_name(winner) << " Total moves: " << G.total_chips() << std::endl;
 					if (winner == RED) red_wins++;
 					else if (winner == GREEN) green_wins++;
 					else draws++;
@@ -149,13 +234,13 @@ void test_AI(){
 }
 
 void test_AI_to_csv(Player_Abs* P1, Player_Abs* P2, std::string filename){
-	
+
 	std::ofstream myfile;
 	myfile.open (filename.c_str(), std::ios_base::app);
 	//myfile<<"Starter,P1name,P1weight,P1depth,P1color,P2name,P2weight,P2depth,P2color, Winner, TotalChips\n";
-	
+
 	//Basic games starting wherever the AI wants to, 3 times starting each.
-	for (int i = 0; i<6; i++){	
+	for (int i = 0; i<6; i++){
 		Game G;
 		if (i%2 == 0){
 		G = Game(P1->get_color());
@@ -168,8 +253,8 @@ void test_AI_to_csv(Player_Abs* P1, Player_Abs* P2, std::string filename){
 		Player winner = G.who_win();
 		myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
 	}
-	//Games where we force the AI to start on each column in the game. 
-	for (int i = 0; i<14; i++){	
+	//Games where we force the AI to start on each column in the game.
+	for (int i = 0; i<14; i++){
 		Game G;
 		if (i%2 == 0){
 		G = Game(P1->get_color());
@@ -184,9 +269,9 @@ void test_AI_to_csv(Player_Abs* P1, Player_Abs* P2, std::string filename){
 		Player winner = G.who_win();
 		myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
 	}
-	
-	//Games where we for the AI to start on a column and the other AI to start on the another one. 
-		for (int i = 0; i<14; i++){	
+
+	//Games where we for the AI to start on a column and the other AI to start on the another one.
+		for (int i = 0; i<14; i++){
 			for (int j = 0; j< 7; j++){
 			Game G;
 			if (i%2 == 0){
@@ -213,9 +298,9 @@ void test_AI_to_csv_lite(Player_Abs* P1, Player_Abs* P2, std::string filename){
 	std::ofstream myfile;
 	myfile.open (filename.c_str(), std::ios_base::app);
 	//myfile<<"Starter,P1name,P1weight,P1depth,P1color,P2name,P2weight,P2depth,P2color, Winner, TotalChips\n";
-	
+
 	//Basic games starting wherever the AI wants to, 1 time starting each.
-	for (int i = 0; i<3; i++){	
+	for (int i = 0; i<3; i++){
 		Game G;
 		G = Game(P1->get_color());
 		myfile<<player_name(G.get_turn())<<","<<P1->class_name()<<","<<P1->get_weight()<<","<<P1->get_depth()<<","<<player_name(P1->get_color())<<","<<P2->class_name()<<","<<P2->get_weight()<<","<<P2->get_depth()<<","<<player_name(P2->get_color())<<",";
@@ -223,12 +308,12 @@ void test_AI_to_csv_lite(Player_Abs* P1, Player_Abs* P2, std::string filename){
 		Player winner = G.who_win();
 		myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
 	}
-	//Games where we force the AI to start on each column in the game. 
-	for (int i = 0; i<7; i++){	
+	//Games where we force the AI to start on each column in the game.
+	for (int i = 0; i<7; i++){
 		Game G;
 		G = Game(P1->get_color());
 		G.play(i);
-		
+
 				//std::cout<<G<<std::endl;
 		myfile<<player_name(G.get_turn())<<","<<P1->class_name()<<","<<P1->get_weight()<<","<<P1->get_depth()<<","<<player_name(P1->get_color())<<","<<P2->class_name()<<","<<P2->get_weight()<<","<<P2->get_depth()<<","<<player_name(P2->get_color())<<",";
 		play_game_silent(P1,P2,G);
@@ -236,16 +321,16 @@ void test_AI_to_csv_lite(Player_Abs* P1, Player_Abs* P2, std::string filename){
 		//std::cout<<G<<std::endl;
 		myfile<<player_name(winner)<<","<<G.total_chips()<<"\n";
 		}
-	
-	//Games where we for the AI to start on a column and the other AI to start on the another one. 
-		for (int i = 0; i<7; i++){	
+
+	//Games where we for the AI to start on a column and the other AI to start on the another one.
+		for (int i = 0; i<7; i++){
 			for (int j = 0; j< 7; j++){
 			Game G;
 			G = Game(P1->get_color());
 			G.play(i);
 			G.play(j);
-		
-			
+
+
 			myfile<<player_name(G.get_turn())<<","<<P1->class_name()<<","<<P1->get_weight()<<","<<P1->get_depth()<<","<<player_name(P1->get_color())<<","<<P2->class_name()<<","<<P2->get_weight()<<","<<P2->get_depth()<<","<<player_name(P2->get_color())<<",";
 			play_game_silent(P1,P2,G);
 			Player winner = G.who_win();
@@ -256,7 +341,7 @@ void test_AI_to_csv_lite(Player_Abs* P1, Player_Abs* P2, std::string filename){
 }
 
 void league(){
-	
+
 	std::vector<Player_Abs*> teams;
 	for (int i = 3; i<5; i++){
 		for (int j = 4; j<7;j++){
@@ -265,7 +350,7 @@ void league(){
 			teams.push_back(new Minmax_tweak_arthur(GREEN, i, j));
 		}
 	}
-	
+
 	for (unsigned int i = 0; i<teams.size(); i++){
 		for (unsigned int j = i+1; j <teams.size(); j++){
 			teams[i]->set_color(GREEN);
@@ -276,7 +361,7 @@ void league(){
 	}
 }
 void short_league(){
-	
+
 	std::vector<Player_Abs*> teams;
 	for (int i = 3; i<4; i++){
 		for (int j = 3; j<8;j++){
@@ -287,7 +372,7 @@ void short_league(){
 	}
 	std::vector<int> result(teams.size());
 	std::vector<int> lose(teams.size());
-	std::vector<int> draw(teams.size());	
+	std::vector<int> draw(teams.size());
 	for (unsigned int i = 0; i<teams.size(); i++){
 		for (unsigned int j = i+1; j <teams.size(); j++){
 			teams[i]->set_color(GREEN);
@@ -307,8 +392,8 @@ void short_league(){
 			else {
 				draw[i]++;
 				draw[j]++;
-			} 
-			
+			}
+
 			if (G2.who_win() == GREEN){
 				result[i]++;
 				lose[j]++;
@@ -320,7 +405,7 @@ void short_league(){
 			else {
 				draw[i]++;
 				draw[j]++;
-			} 
+			}
 		}
 	}
 	//128.39.75.111
@@ -328,11 +413,11 @@ void short_league(){
 		std::cout<< " wins: " << result[i] <<" "
 		  				<< " loses: " << lose[i]<< " "
 		  				<< " draws: " << draw[i] <<" IA "
-		  				<< teams[i]->class_name() << " " 
-						<< teams[i]->get_weight() << " " 
-						<< teams[i]->get_depth() << " " 
+		  				<< teams[i]->class_name() << " "
+						<< teams[i]->get_weight() << " "
+						<< teams[i]->get_depth() << " "
 		  				<< std::endl;
-	} 
+	}
 }
 
 void play_game_real_board(){
@@ -344,13 +429,14 @@ cv::VideoCapture vcap;
   Cv_c4_option opt;
   cv::Mat image;
   opt.load("save.cvconf");
-  
+
   Cv_c4 cv(opt);
   std::vector<CV_BOARD_STATE> old_board(6*7,CV_VIDE);
   CV_BOARD_STATE expect = CV_RED;
   Cv_c4_optim  optim_cv(cv);
-  
-  
+
+initial_phrase(TTS);
+sleep(3);
 Player_Abs* Human_player = new Human(GREEN);
 Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
 vcap.read(image);
@@ -362,8 +448,8 @@ int nextplay = 0;
 nao_is_red(TTS);
 nao_start(TTS);
 while (!(A.is_over())) {
-		if (A.get_turn() == Human_player->get_color()) { 
-		    expect = CV_GREEN;   
+		if (A.get_turn() == Human_player->get_color()) {
+		    expect = CV_GREEN;
 			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(RED);
@@ -375,13 +461,14 @@ while (!(A.is_over())) {
 			Game copy_A = A;
 			copy_A.apply(m);
 			nextplay = m.column;
+      pointAtColumn(vcap, nextplay, Tracker);
 			expect = CV_RED;
 			//think(TTS);
 			play_on_row(nextplay,TTS);
 			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(GREEN);
-			if (A == copy_A)
+			if (A == copy_A && !(A.is_over()))
         {after_nao_turn(TTS);}
 			else
         {cheat(TTS,Tracker);}
@@ -448,7 +535,7 @@ play_game_real_board();
 	myfile.open (filename.c_str(), std::ios_base::app);
 	myfile<<"Starter,P1name,P1weight,P1depth,P1color,P2name,P2weight,P2depth,P2color, Winner, TotalChips\n";
 	myfile.close();
-	
+
 	Player_Abs* P2 = new Minmax_tweak_arthur(RED, 4, 3);
 	for (int depth = 1; depth<10; depth++){
 		for(int weight = 4; weight<5; weight++){
@@ -458,14 +545,14 @@ play_game_real_board();
 	}
 	}
 	*/
-	
+
 	//for (int depth = 1; depth<11; depth++){
 	//Player_Abs* P1 = new Minmax_tweak_arthur(GREEN, 4, 3);
 	//std::cout << "Doing weight-depth " << "4" << "-" << depth << std::endl;
 	//test_AI_to_csv_lite(P1,P2, filename);
 	//}
 
-	
+
 	/*Game G(RED);
 	play_game_silent(P1,P2,G);
 	std::cout << G << std::endl;
@@ -473,6 +560,6 @@ play_game_real_board();
 	std::cout << "And the winner is..." << player_name(Result) << "!!!" << std::endl;
 	*/
 	//test_AI();
-	
+
 
 }
