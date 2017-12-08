@@ -353,7 +353,8 @@ cv::VideoCapture vcap;
   CV_BOARD_STATE expect = CV_RED;
   Cv_c4_optim  optim_cv(cv);
   
-  
+initial_phrase(TTS);
+sleep(3); 
 Player_Abs* Human_player = new Human(GREEN);
 Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
 vcap.read(image);
@@ -384,7 +385,7 @@ while (!(A.is_over())) {
 			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(GREEN);
-			if (A == copy_A)
+			if (A == copy_A && !(A.is_over()))
         {after_nao_turn(TTS);}
 			else
         {cheat(TTS,Tracker);}
