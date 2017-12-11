@@ -15,70 +15,124 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
 
+#include <alcommon/albroker.h>
+#include <alcommon/almodule.h>
+#include <alcommon/albrokermanager.h>
+#include <alcommon/altoolsmain.h>
+#include <alproxies/almotionproxy.h>
+#include <alproxies/altrackerproxy.h>
+#include <alproxies/alrobotpostureproxy.h>
+#include <almath/types/alpose2d.h>
+#include <almath/tools/aldubinscurve.h>
+#include <almath/tools/almathio.h>
+#include <almath/tools/almath.h>
+#include <almath/tools/altrigonometry.h>
+
 
 const std::string ipnao = "128.39.75.111";
 AL::ALTextToSpeechProxy TTS(ipnao, 9559);
 AL::ALTrackerProxy Tracker(ipnao, 9559);
+AL::ALRobotPostureProxy Motion(ipnao, 9559);
+
+static bool readCameraParameters(std::string filename, cv::Mat &camMatrix, cv::Mat &distCoeffs) {
+    cv::FileStorage fs(filename, cv::FileStorage::READ);
+    if(!fs.isOpened())
+        return false;
+    fs["camera_matrix"] >> camMatrix;
+    fs["distortion_coefficients"] >> distCoeffs;
+    return true;
+}
 
 void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy) {
+  std::cout << "move" << column << "\n";
 
   const std::string effector = "RArm";
   const std::string calibFile = "nao.txt";
   int markerCount = 2;
   int dictionaryId = 0;
   float markerLength = 0.01; // [m]
-  Mat camMatrix, distCoeffs;
+  cv::Mat camMatrix, distCoeffs;
   bool readOk = readCameraParameters(calibFile, camMatrix, distCoeffs);
   if(!readOk) {
-      cerr << "Invalid camera file" << endl;
-      return 0;
+      std::cerr << "Invalid camera file" << std::endl;
   }
-  Ptr<aruco::Dictionary> dictionary =
-      aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-  Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
-  detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX; // do corner refinement in markers
+  std::cout <<"cam OK"  << "\n";
+
+  cv::Ptr<cv::aruco::Dictionary> dictionary =
+      cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+  cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
+  detectorParams->cornerRefinementMethod = cv::aruco::CORNER_REFINE_SUBPIX; // do corner refinement in markers
 
   double *p[markerCount];
-  while(vcap.grab() && p[0] == NULL && p[1] == NULL) {
-    Mat image, imageCopy;
-    vcap.retrieve(image);
-    vector< double > x(markerCount), y(markerCount), z(markerCount);
-    double *p[markerCount];
-    for (unsigned int j = 0; j < markerCount; j++) {
-        p[j] = &x[j];
-    }
-    vector< vector< Point2f > > corners, rejected;
-    vector< int > ids(markerCount);
-    vector< Vec3d > rvecs, tvecs;
-
-    aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-    aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
-                                     tvecs);
-    image.copyTo(imageCopy);
-    aruco::drawDetectedMarkers(imageCopy, corners, ids);
-    for(unsigned int i = 0; i < ids.size(); i++) {
-        x[ids[i]] = tvecs[i][0];
-        y[ids[i]] = tvecs[i][1];
-        z[ids[i]] = tvecs[i][2];
-        aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
-                        markerLength * 0.5f);
-    }
-    if(rejected.size() > 0)
-        aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
-    imshow("out", imageCopy);
+  for (int i = 0; i < markerCount; i++) {
+    p[i]=NULL;
   }
 
-  float x_total = (float)x[1] - (float)x[0];
-  float dx = x_total/8;
-  //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
-  float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
-  std::vector<float> vv(&v[0],&v[0]+3);
-  trackerProxy.pointAt(effector, vv, 0, 0.2);
+  std::cout << vcap.grab()<<std::endl;
 
-  float v[3] = {(float)z[0], -(float)x[1], -(float)y[0]};
-  std::vector<float> vv(&v[0],&v[0]+3);
-  trackerProxy.pointAt(effector, vv, 0, 0.2);
+  std::cout <<(vcap.grab() && p[0] == NULL && p[1] == NULL ) << "\n";
 
+  while(vcap.grab() && p[0] == NULL && p[1] == NULL) {
+    cv::Mat image, imageCopy;
+    vcap.retrieve(image);
+    std::vector< double > x(markerCount), y(markerCount), z(markerCount);
+    double *p[markerCount];
+
+    for (unsigned int j = 0; j < markerCount; j++) {
+      p[j] = &x[j];
+    }
+
+    std::vector< std::vector< cv::Point2f > > corners, rejected;
+    std::vector< int > ids(markerCount);
+    std::vector< cv::Vec3d > rvecs, tvecs;
+
+    cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+    cv::aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
+                                         tvecs);
+    image.copyTo(imageCopy);
+    cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
+
+    for(unsigned int i = 0; i < ids.size(); i++) {
+      x[ids[i]] = tvecs[i][0];
+      y[ids[i]] = tvecs[i][1];
+      z[ids[i]] = tvecs[i][2];
+      cv::aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
+                          markerLength * 0.5f);
+    }
+
+    std::cout <<"detection OK"  << "\n";
+
+    if(rejected.size() > 0)
+      {    cv::aruco::drawDetectedMarkers(imageCopy, rejected, cv::noArray(), cv::Scalar(100, 0, 255));}
+
+    imshow("out", imageCopy);
+
+    float x_total = (-(float)x[1]) - (-(float)x[0]);
+    float dx = x_total/8;
+    //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
+
+    // float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
+    // std::vector<float> vv(&v[0],&v[0]+3);
+    // trackerProxy.pointAt("LArm", vv, 0, 0.2);
+    // std::cout << vv << "\n";
+
+    // float u[3] = {(float)z[1], -(float)x[1], -(float)y[1]};
+    // std::vector<float> uu(&u[0],&u[0]+3);
+    // trackerProxy.pointAt("RArm", uu, 0, 0.2);
+    // std::cout << uu << "\n";
+
+    float d[3] = {(float)z[0], -(float)x[0] + dx * (column+1), -(float)y[0]};
+    std::vector<float> dd(&d[0],&d[0]+3);
+    trackerProxy.pointAt((dd.at(1)>0)? "LArm":"RArm" , dd, 0, 0.2);
+    std::cout << dd << "\n";
+
+    break;
+
+  }
+
+  Motion.goToPosture("Stand", 0.4f);
+
+  std::cout << "end move" << "\n";
 }
 
 void config_run(Cv_c4_option_helper& cvh,  cv::VideoCapture vcap) {
@@ -400,6 +454,9 @@ void short_league(){
 
 void play_game_real_board(){
 srand(time(NULL));
+
+ Motion.goToPosture("Stand",0.4f);
+
 cv::VideoCapture vcap;
  if(!vcap.open("tcp://128.39.75.111:3001")) {
     std::cout << "Error opening video stream or file" << std::endl;
@@ -463,67 +520,6 @@ while (!(A.is_over())) {
     {nao_lose(TTS);}
 	else
     {nao_draw(TTS);}
-}
-
-void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy) {
-
-  const std::string effector = "RArm";
-  const std::string calibFile = "nao.txt";
-  int markerCount = 2;
-  int dictionaryId = 0;
-  float markerLength = 0.01; // [m]
-  Mat camMatrix, distCoeffs;
-  bool readOk = readCameraParameters(calibFile, camMatrix, distCoeffs);
-  if(!readOk) {
-      cerr << "Invalid camera file" << endl;
-      return 0;
-  }
-  Ptr<aruco::Dictionary> dictionary =
-      aruco::getPredefinedDictionary(aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-  Ptr<aruco::DetectorParameters> detectorParams = aruco::DetectorParameters::create();
-  detectorParams->cornerRefinementMethod = aruco::CORNER_REFINE_SUBPIX; // do corner refinement in markers
-
-  double *p[markerCount];
-  while(vcap.grab() && p[0] == NULL && p[1] == NULL) {
-    Mat image, imageCopy;
-    vcap.retrieve(image);
-    vector< double > x(markerCount), y(markerCount), z(markerCount);
-    double *p[markerCount];
-    for (unsigned int j = 0; j < markerCount; j++) {
-        p[j] = &x[j];
-    }
-    vector< vector< Point2f > > corners, rejected;
-    vector< int > ids(markerCount);
-    vector< Vec3d > rvecs, tvecs;
-
-    aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
-    aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
-                                     tvecs);
-    image.copyTo(imageCopy);
-    aruco::drawDetectedMarkers(imageCopy, corners, ids);
-    for(unsigned int i = 0; i < ids.size(); i++) {
-        x[ids[i]] = tvecs[i][0];
-        y[ids[i]] = tvecs[i][1];
-        z[ids[i]] = tvecs[i][2];
-        aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
-                        markerLength * 0.5f);
-    }
-    if(rejected.size() > 0)
-        aruco::drawDetectedMarkers(imageCopy, rejected, noArray(), Scalar(100, 0, 255));
-    imshow("out", imageCopy);
-  }
-
-  float x_total = (float)x[1] - (float)x[0];
-  float dx = x_total/8;
-  //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
-  float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
-  std::vector<float> vv(&v[0],&v[0]+3);
-  trackerProxy.pointAt(effector, vv, 0, 0.2);
-
-  float v[3] = {(float)z[0], -(float)x[1], -(float)y[0]};
-  std::vector<float> vv(&v[0],&v[0]+3);
-  trackerProxy.pointAt(effector, vv, 0, 0.2);
-
 }
 
 int main(int argc, char* argv[]) {
