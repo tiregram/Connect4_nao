@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 project (Connect4_nao)
 
 set(CMAKE_CXX_STANDARD 11)
+#set(CMAKE_CXX_FLAGS "-stdlib=libc++")
 add_definitions("-D_GLIBCXX_USE_CXX11_ABI=0")
 
 find_package(OpenCV REQUIRED)
@@ -25,10 +26,6 @@ target_link_libraries(c4nao c4_cv)
 target_link_libraries(c4nao ${CMAKE_THREAD_LIBS_INIT})
 
 qi_use_lib(c4nao ALCOMMON ALPROXIES)
-
-
-
-
 
 
 
