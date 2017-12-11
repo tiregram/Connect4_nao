@@ -2,10 +2,13 @@
 #include <alerror/alerror.h>
 #include <alproxies/altexttospeechproxy.h>
 #include <alproxies/altrackerproxy.h>
+#include <alproxies/almotionproxy.h>
 #include <iostream>
 #include <cstring>
 #include <time.h>
 #include <thread>
+#include <opencv2/highgui.hpp>
+#include <opencv2/aruco.hpp>
 
 
 std::string isRed[] = {
@@ -210,5 +213,106 @@ void think(AL::ALTextToSpeechProxy voiceproxy){
 void initial_phrase(AL::ALTextToSpeechProxy voiceproxy){
 	const std::string phrase = "Hey human, do you want to play a game of connect four with me ?";
 	voiceproxy.say(phrase);
+}
+
+void open_hand(AL:ALMotionProxy motionproxy, const std::string& hand_name){
+	motionproxy.openHand(hand_name);
+}
+
+void close_hand(AL:ALMotionProxy motionproxy, const std::string& hand_name){
+	motionproxy.closeHand(hand_name);
+}
+
+void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy, AL::ALMotionProxy motionproxy, AL::ALTextToSpeechProxy voiceproxy, AL::ALRobotPostureProxy postureproxy) {
+  std::cout << "move" << column << "\n";
+
+  const std::string effector = "RArm";
+  const std::string calibFile = "nao.txt";
+  int markerCount = 2;
+  int dictionaryId = 0;
+  float markerLength = 0.01; // [m]
+  cv::Mat camMatrix, distCoeffs;
+  bool readOk = readCameraParameters(calibFile, camMatrix, distCoeffs);
+  if(!readOk) {
+      std::cerr << "Invalid camera file" << std::endl;
+  }
+  std::cout <<"cam OK"  << "\n";
+
+  cv::Ptr<cv::aruco::Dictionary> dictionary =
+      cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+  cv::Ptr<cv::aruco::DetectorParameters> detectorParams = cv::aruco::DetectorParameters::create();
+  detectorParams->cornerRefinementMethod = cv::aruco::CORNER_REFINE_SUBPIX; // do corner refinement in markers
+
+  double *p[markerCount];
+  for (int i = 0; i < markerCount; i++) {
+    p[i]=NULL;
+  }
+
+  std::cout << vcap.grab()<<std::endl;
+
+  std::cout <<(vcap.grab() && p[0] == NULL && p[1] == NULL ) << "\n";
+
+  while(vcap.grab() && p[0] == NULL && p[1] == NULL) {
+    cv::Mat image, imageCopy;
+    vcap.retrieve(image);
+    std::vector< double > x(markerCount), y(markerCount), z(markerCount);
+    double *p[markerCount];
+
+    for (unsigned int j = 0; j < markerCount; j++) {
+      p[j] = &x[j];
+    }
+
+    std::vector< std::vector< cv::Point2f > > corners, rejected;
+    std::vector< int > ids(markerCount);
+    std::vector< cv::Vec3d > rvecs, tvecs;
+
+    cv::aruco::detectMarkers(image, dictionary, corners, ids, detectorParams, rejected);
+    cv::aruco::estimatePoseSingleMarkers(corners, markerLength, camMatrix, distCoeffs, rvecs,
+                                         tvecs);
+    image.copyTo(imageCopy);
+    cv::aruco::drawDetectedMarkers(imageCopy, corners, ids);
+
+    for(unsigned int i = 0; i < ids.size(); i++) {
+      x[ids[i]] = tvecs[i][0];
+      y[ids[i]] = tvecs[i][1];
+      z[ids[i]] = tvecs[i][2];
+      cv::aruco::drawAxis(imageCopy, camMatrix, distCoeffs, rvecs[i], tvecs[i],
+                          markerLength * 0.5f);
+    }
+
+    std::cout <<"detection OK"  << "\n";
+
+    if(rejected.size() > 0)
+      {    cv::aruco::drawDetectedMarkers(imageCopy, rejected, cv::noArray(), cv::Scalar(100, 0, 255));}
+
+    imshow("out", imageCopy);
+
+    float x_total = (-(float)x[1]) - (-(float)x[0]);
+    float dx = x_total/8;
+    //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
+
+    // float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
+    // std::vector<float> vv(&v[0],&v[0]+3);
+    // trackerProxy.pointAt("LArm", vv, 0, 0.2);
+    // std::cout << vv << "\n";
+
+    // float u[3] = {(float)z[1], -(float)x[1], -(float)y[1]};
+    // std::vector<float> uu(&u[0],&u[0]+3);
+    // trackerProxy.pointAt("RArm", uu, 0, 0.2);
+    // std::cout << uu << "\n";
+
+    float d[3] = {(float)z[0], -(float)x[0] + dx * (column+1), -(float)y[0]};
+    std::vector<float> dd(&d[0],&d[0]+3);
+    trackerProxy.pointAt((dd.at(1)>0)? "LArm":"RArm" , dd, 0, 0.2);
+    motionproxy.open_hand(dd.at(1)>0)? "LArm":"RArm");
+    std::cout << dd << "\n";
+
+    break;
+
+  }
+
+  postureproxy.goToPosture("Stand", 0.4f);
+
+  std::cout << "end move" << "\n";
 }
 
