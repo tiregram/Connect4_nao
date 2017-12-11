@@ -109,17 +109,6 @@ void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy tracker
 
     float x_total = (-(float)x[1]) - (-(float)x[0]);
     float dx = x_total/8;
-    //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
-
-    // float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
-    // std::vector<float> vv(&v[0],&v[0]+3);
-    // trackerProxy.pointAt("LArm", vv, 0, 0.2);
-    // std::cout << vv << "\n";
-
-    // float u[3] = {(float)z[1], -(float)x[1], -(float)y[1]};
-    // std::vector<float> uu(&u[0],&u[0]+3);
-    // trackerProxy.pointAt("RArm", uu, 0, 0.2);
-    // std::cout << uu << "\n";
 
     float d[3] = {(float)z[0], -(float)x[0] + dx * (column+1), -(float)y[0]};
     std::vector<float> dd(&d[0],&d[0]+3);
