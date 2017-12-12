@@ -2,47 +2,27 @@
 #include <string>
 #include <fstream>
 #include <typeinfo>
+
 #include "Game.hpp"
+
 #include "Reactions.hpp"
+
 #include "Minmax.hpp"
 #include "Minmax_tweak.hpp"
 #include "Minmax_tweak_arthur.hpp"
+
 #include "Basic.hpp"
 #include "Human.hpp"
-#include <opencv2/opencv.hpp>
+
 #include "Cv_c4_option_helper.hpp"
 #include "Cv_c4_optim.hpp"
-#include <opencv2/highgui.hpp>
-#include <opencv2/aruco.hpp>
-
-#include <alcommon/albroker.h>
-#include <alcommon/almodule.h>
-#include <alcommon/albrokermanager.h>
-#include <alcommon/altoolsmain.h>
-#include <alproxies/almotionproxy.h>
-#include <alproxies/altrackerproxy.h>
-#include <alproxies/alrobotpostureproxy.h>
-#include <almath/types/alpose2d.h>
-#include <almath/tools/aldubinscurve.h>
-#include <almath/tools/almathio.h>
-#include <almath/tools/almath.h>
-#include <almath/tools/altrigonometry.h>
 
 
-const std::string ipnao = "128.39.75.111";
+const std::string ipnao = "158.36.91.43";
 AL::ALTextToSpeechProxy TTS(ipnao, 9559);
 AL::ALTrackerProxy Tracker(ipnao, 9559);
 AL::ALRobotPostureProxy posture(ipnao, 9559);
-AL::MotionProxy motion(ipnao,9559);
-
-static bool readCameraParameters(std::string filename, cv::Mat &camMatrix, cv::Mat &distCoeffs) {
-    cv::FileStorage fs(filename, cv::FileStorage::READ);
-    if(!fs.isOpened())
-        return false;
-    fs["camera_matrix"] >> camMatrix;
-    fs["distortion_coefficients"] >> distCoeffs;
-    return true;
-}
+AL::ALMotionProxy motion(ipnao,9559);
 
 
 void config_run(Cv_c4_option_helper& cvh,  cv::VideoCapture vcap) {
@@ -368,7 +348,7 @@ srand(time(NULL));
  posture.goToPosture("Stand",0.4f);
 
 cv::VideoCapture vcap;
- if(!vcap.open("tcp://128.39.75.111:3001")) {
+ if(!vcap.open("tcp://"+ipnao+":3001")) {
     std::cout << "Error opening video stream or file" << std::endl;
   }
   Cv_c4_option opt;
@@ -383,7 +363,7 @@ cv::VideoCapture vcap;
 initial_phrase(TTS);
 sleep(3);
 Player_Abs* Human_player = new Human(GREEN);
-Player_Abs* Nao = new Minmax_tweak_arthur(RED, 3,5);
+Player_Abs* Nao = new Minmax_tweak_arthur(RED, 4,6);
 vcap.read(image);
 old_board = cv.predict_board(image);
 Game A = vision_to_game(old_board);
@@ -408,14 +388,12 @@ while (!(A.is_over())) {
 			nextplay = m.column;
       pointAtColumn(vcap, nextplay, Tracker, motion, TTS, posture);
 			expect = CV_RED;
-			//think(TTS);
-			play_on_row(nextplay,TTS);
-			old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
+      old_board = optim_cv.predict_next_board(old_board,4,6,vcap,expect);
 			A = vision_to_game(old_board);
 			A.set_turn(GREEN);
 			if (A == copy_A && !(A.is_over()))
         {after_nao_turn(TTS);}
-			else
+			else if (! A.is_over())
         {cheat(TTS,Tracker);}
 			//if (vision_to_game(old_board) != A)
 
@@ -425,7 +403,7 @@ while (!(A.is_over())) {
 	}
 	Player Result = A.who_win();
 	if (Result == RED)
-    {nao_win(TTS,Tracker);}
+    {nao_win(TTS,Tracker,posture);}
   else	if (Result == GREEN)
     {nao_lose(TTS);}
 	else

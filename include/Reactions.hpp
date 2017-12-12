@@ -1,14 +1,31 @@
 #pragma once
-#include <alerror/alerror.h>
-#include <alproxies/altexttospeechproxy.h>
-#include <alproxies/altrackerproxy.h>
-#include <alproxies/almotionproxy.h>
+
 #include <iostream>
 #include <cstring>
 #include <time.h>
 #include <thread>
+
+#include <opencv2/opencv.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/aruco.hpp>
+
+#include <alerror/alerror.h>
+
+#include <alcommon/albroker.h>
+#include <alcommon/almodule.h>
+#include <alcommon/albrokermanager.h>
+#include <alcommon/altoolsmain.h>
+
+#include <alproxies/altexttospeechproxy.h>
+#include <alproxies/almotionproxy.h>
+#include <alproxies/altrackerproxy.h>
+#include <alproxies/alrobotpostureproxy.h>
+
+#include <almath/types/alpose2d.h>
+#include <almath/tools/aldubinscurve.h>
+#include <almath/tools/almathio.h>
+#include <almath/tools/almath.h>
+#include <almath/tools/altrigonometry.h>
 
 
 std::string isRed[] = {
@@ -151,7 +168,7 @@ void after_nao_turn(AL::ALTextToSpeechProxy voiceproxy){
 
 }
 
-void nao_win(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy){
+void nao_win(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy, AL::ALRobotPostureProxy postureproxy){
 	
 	std::vector<float> uparms(3), downarms(3), headdown(3), headup(3);
 	uparms = {0.4,1,0.6};
@@ -165,8 +182,10 @@ void nao_win(AL::ALTextToSpeechProxy voiceproxy, AL::ALTrackerProxy trackerproxy
 	vt.join();
 	vt2.join();
 	std::thread vt3(do_lookAt,trackerproxy,headup,0.4);
-	trackerproxy.pointAt("Arms",downarms,0,0.4);
+
+  postureproxy.goToPosture("Stand", 0.4f);
 	vt3.join();
+
 
 }
 
@@ -215,15 +234,29 @@ void initial_phrase(AL::ALTextToSpeechProxy voiceproxy){
 	voiceproxy.say(phrase);
 }
 
-void open_hand(AL:ALMotionProxy motionproxy, const std::string& hand_name){
+void open_hand (AL::ALMotionProxy motionproxy, const std::string& hand_name)
+{
 	motionproxy.openHand(hand_name);
 }
 
-void close_hand(AL:ALMotionProxy motionproxy, const std::string& hand_name){
+void close_hand (AL::ALMotionProxy motionproxy, const std::string& hand_name)
+{
 	motionproxy.closeHand(hand_name);
 }
 
-void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy, AL::ALMotionProxy motionproxy, AL::ALTextToSpeechProxy voiceproxy, AL::ALRobotPostureProxy postureproxy) {
+
+static bool readCameraParameters(std::string filename, cv::Mat &camMatrix, cv::Mat &distCoeffs) {
+  cv::FileStorage fs(filename, cv::FileStorage::READ);
+  if(!fs.isOpened())
+    return false;
+  fs["camera_matrix"] >> camMatrix;
+  fs["distortion_coefficients"] >> distCoeffs;
+  return true;
+}
+
+
+void pointAtColumn (cv::VideoCapture vcap, int column, AL::ALTrackerProxy trackerProxy, AL::ALMotionProxy motionproxy, AL::ALTextToSpeechProxy voiceproxy, AL::ALRobotPostureProxy postureproxy)
+{
   std::cout << "move" << column << "\n";
 
   const std::string effector = "RArm";
@@ -289,23 +322,19 @@ void pointAtColumn(cv::VideoCapture vcap, int column, AL::ALTrackerProxy tracker
 
     float x_total = (-(float)x[1]) - (-(float)x[0]);
     float dx = x_total/8;
-    //float v[3] = {(float)z[0], -(float)x[0] - column*dx, -(float)y[0]};
-
-    // float v[3] = {(float)z[0], -(float)x[0], -(float)y[0]};
-    // std::vector<float> vv(&v[0],&v[0]+3);
-    // trackerProxy.pointAt("LArm", vv, 0, 0.2);
-    // std::cout << vv << "\n";
-
-    // float u[3] = {(float)z[1], -(float)x[1], -(float)y[1]};
-    // std::vector<float> uu(&u[0],&u[0]+3);
-    // trackerProxy.pointAt("RArm", uu, 0, 0.2);
-    // std::cout << uu << "\n";
 
     float d[3] = {(float)z[0], -(float)x[0] + dx * (column+1), -(float)y[0]};
     std::vector<float> dd(&d[0],&d[0]+3);
-    trackerProxy.pointAt((dd.at(1)>0)? "LArm":"RArm" , dd, 0, 0.2);
-    motionproxy.open_hand(dd.at(1)>0)? "LArm":"RArm");
-    std::cout << dd << "\n";
+    std::string arm =  (dd.at(1)>0)? "LArm":"RArm";
+    std::string hand =  (dd.at(1)>0)? "LHand":"RHand";
+
+    std::ostringstream ss;
+
+    std::thread h(open_hand,motionproxy, hand);
+    std::thread t(play_on_row, column, voiceproxy);
+    trackerProxy.pointAt(arm, dd, 0, 0.2);
+    h.join();
+    t.join();
 
     break;
 
